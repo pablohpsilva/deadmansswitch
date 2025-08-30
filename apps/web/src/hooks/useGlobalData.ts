@@ -31,21 +31,20 @@ export function useGlobalData() {
     enabled: !!userSession.data, // Only fetch if user is authenticated
   });
 
-  // App configuration or stats (could be from API)
+  // App configuration or stats from API
   const appStats = useQuery({
     queryKey: ["app-stats"],
     queryFn: async () => {
-      // This could fetch real-time stats from your API
-      // For now, return mock data
-      return {
-        totalUsers: 12547,
-        messagesDelivered: 8932,
-        uptime: "99.9%",
-        lastUpdated: new Date(),
-      };
+      // Fetch from our new API endpoint
+      const response = await fetch("/api/public/stats");
+      if (!response.ok) {
+        throw new Error("Failed to fetch app stats");
+      }
+      return response.json();
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchInterval: 60 * 1000, // Update every minute for live stats
   });
 
   // Prefetch common data when user is authenticated
