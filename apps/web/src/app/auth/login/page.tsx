@@ -1,46 +1,103 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield, Mail, Zap, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc";
+import { useAuthMutations } from "@/hooks/useAuthMutations";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [authMethod, setAuthMethod] = useState<"email" | "nostr" | null>(null);
   const [email, setEmail] = useState("");
   const [tempPassword, setTempPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"method" | "email-input" | "password-input">(
     "method"
   );
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const {
+    requestEmailAuth,
+    loginWithEmail,
+    loginWithNostr,
+    checkAuthStatus,
+    isAuthenticating,
+  } = useAuthMutations();
+
+  // Check if user is already authenticated on component mount
+  React.useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const handleEmailAuth = async () => {
     if (step === "email-input") {
-      setIsLoading(true);
-      // TODO: Call tRPC to request temp password
-      console.log("Requesting temp password for:", email);
-      setTimeout(() => {
-        setIsLoading(false);
+      // Validate email
+      if (!email || !/\S+@\S+\.\S+/.test(email)) {
+        setErrors({ email: "Please enter a valid email address" });
+        return;
+      }
+
+      setErrors({});
+      try {
+        await requestEmailAuth.mutateAsync({ email });
         setStep("password-input");
-      }, 2000);
+      } catch (error) {
+        setErrors({
+          email:
+            error instanceof Error
+              ? error.message
+              : "Failed to send login code",
+        });
+      }
     } else if (step === "password-input") {
-      setIsLoading(true);
-      // TODO: Call tRPC to login with temp password
-      console.log("Logging in with temp password:", tempPassword);
-      setTimeout(() => {
-        setIsLoading(false);
-        // Redirect to dashboard
-      }, 1500);
+      // Validate temp password
+      if (!tempPassword.trim()) {
+        setErrors({ password: "Please enter the login code" });
+        return;
+      }
+
+      setErrors({});
+      try {
+        await loginWithEmail.mutateAsync({
+          email,
+          tempPassword: tempPassword.trim(),
+        });
+        // Navigation handled by the mutation's onSuccess
+      } catch (error) {
+        setErrors({
+          password:
+            error instanceof Error ? error.message : "Invalid login code",
+        });
+      }
     }
   };
 
   const handleNostrAuth = async () => {
-    setIsLoading(true);
-    // TODO: Implement Nostr wallet connection
-    console.log("Connecting with Nostr wallet");
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    try {
+      // TODO: Implement actual Nostr wallet connection
+      // For now, we'll simulate the process
+      console.log("Connecting with Nostr wallet");
+
+      // This would normally involve wallet connection and signing
+      // await loginWithNostr.mutateAsync({
+      //   publicKey,
+      //   signature,
+      //   message
+      // });
+
+      // Placeholder for development
+      setErrors({ nostr: "Nostr integration coming soon!" });
+    } catch (error) {
+      setErrors({
+        nostr:
+          error instanceof Error
+            ? error.message
+            : "Failed to connect with Nostr wallet",
+      });
+    }
   };
 
   return (
@@ -113,7 +170,7 @@ export default function LoginPage() {
                     setAuthMethod("nostr");
                     handleNostrAuth();
                   }}
-                  disabled={isLoading}
+                  disabled={isAuthenticating}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-colors text-left disabled:opacity-50"
                 >
                   <div className="flex items-center space-x-3">
@@ -171,15 +228,21 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {errors.email && (
+                  <div className="text-red-600 text-sm">{errors.email}</div>
+                )}
+
                 <button
                   onClick={handleEmailAuth}
-                  disabled={isLoading || !email}
+                  disabled={isAuthenticating || !email}
                   className={cn(
                     "w-full py-3 px-6 rounded-lg font-semibold transition-colors",
                     "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   )}
                 >
-                  {isLoading ? "Sending Code..." : "Send Login Code"}
+                  {requestEmailAuth.isPending
+                    ? "Sending Code..."
+                    : "Send Login Code"}
                 </button>
               </div>
             )}
@@ -221,20 +284,29 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {errors.password && (
+                  <div className="text-red-600 text-sm">{errors.password}</div>
+                )}
+
                 <button
                   onClick={handleEmailAuth}
-                  disabled={isLoading || !tempPassword}
+                  disabled={isAuthenticating || !tempPassword}
                   className={cn(
                     "w-full py-3 px-6 rounded-lg font-semibold transition-colors",
                     "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   )}
                 >
-                  {isLoading ? "Signing In..." : "Sign In"}
+                  {loginWithEmail.isPending ? "Signing In..." : "Sign In"}
                 </button>
 
                 <button
-                  onClick={() => setStep("email-input")}
-                  className="w-full py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  onClick={() => {
+                    setStep("email-input");
+                    setTempPassword("");
+                    setErrors({});
+                  }}
+                  disabled={isAuthenticating}
+                  className="w-full py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
                 >
                   Need a new code? Click here
                 </button>

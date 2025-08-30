@@ -12,8 +12,10 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).unique(),
-  // Encrypted field for nostr private key (when user doesn't provide their own)
-  nostrPrivateKey: text("nostr_private_key"), // encrypted
+  // Authentication method: 'email' users get generated keys, 'nostr' users bring their own
+  authType: varchar("auth_type", { length: 20 }).notNull().default("email"), // email, nostr
+  // Encrypted field for nostr private key (ONLY for email-authenticated users)
+  nostrPrivateKey: text("nostr_private_key"), // encrypted, null for nostr-authenticated users
   nostrPublicKey: varchar("nostr_public_key", { length: 255 }),
   tempPassword: varchar("temp_password", { length: 255 }),
   tempPasswordExpires: timestamp("temp_password_expires"),

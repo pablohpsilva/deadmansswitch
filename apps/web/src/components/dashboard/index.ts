@@ -1,0 +1,6 @@
+// Dashboard component exports for easier imports
+export { EmailList } from "./EmailList";
+export { EmailForm } from "./EmailForm";
+export { UserProfile } from "./UserProfile";
+export { TierLimits } from "./TierLimits";
+export { EmailDetailView } from "./EmailDetailView";

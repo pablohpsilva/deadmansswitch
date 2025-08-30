@@ -37,14 +37,15 @@ export const authRouter = createTRPCRouter({
           .where(eq(users.email, email));
 
         if (!user) {
-          // Create new user with Nostr keypair
+          // Create new user with Nostr keypair (email auth users get generated keys)
           const keypair = await generateNostrKeypair();
 
           [user] = await db
             .insert(users)
             .values({
               email,
-              nostrPrivateKey: encryptData(keypair.privateKey),
+              authType: "email", // Email-authenticated users get generated keys
+              nostrPrivateKey: encryptData(keypair.privateKey), // Encrypted storage for email users
               nostrPublicKey: keypair.publicKey,
               tier: "free",
             })
@@ -189,7 +190,9 @@ export const authRouter = createTRPCRouter({
         [user] = await db
           .insert(users)
           .values({
+            authType: "nostr", // Nostr-authenticated users bring their own keys
             nostrPublicKey: publicKey,
+            // nostrPrivateKey: null (explicitly not storing private keys for nostr users)
             tier: "free",
           })
           .returning();
@@ -237,24 +240,40 @@ export const authRouter = createTRPCRouter({
     };
   }),
 
-  // Export Nostr keys (for email-based users)
+  // Export Nostr keys (ONLY for email-authenticated users)
   exportNostrKeys: protectedProcedure.mutation(async ({ ctx }) => {
     const [user] = await db
       .select()
       .from(users)
       .where(eq(users.id, ctx.user.id));
 
-    if (!user || !user.nostrPrivateKey) {
+    if (!user) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "No Nostr keys found for this user",
+        message: "User not found",
+      });
+    }
+
+    // Only email-authenticated users can export keys (they have generated keys)
+    if (user.authType !== "email") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "Key export is only available for email-authenticated users. Nostr users already have their keys.",
+      });
+    }
+
+    if (!user.nostrPrivateKey) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No private key found. It may have already been exported.",
       });
     }
 
     // Decrypt private key
     const privateKey = decryptData(user.nostrPrivateKey);
 
-    // Immediately wipe the keys from database
+    // Immediately wipe the keys from database after export
     await db
       .update(users)
       .set({
@@ -266,7 +285,9 @@ export const authRouter = createTRPCRouter({
       privateKey,
       publicKey: user.nostrPublicKey,
       warning:
-        "Keys have been permanently removed from our servers. Store them safely!",
+        "🔑 Keys have been permanently removed from our servers. Store them safely!",
+      recommendation:
+        "Import these keys into a Nostr client like Damus, Amethyst, or Nostter.",
     };
   }),
 
@@ -287,10 +308,12 @@ export const authRouter = createTRPCRouter({
     return {
       id: user.id,
       email: user.email,
+      authType: user.authType,
       nostrPublicKey: user.nostrPublicKey,
       tier: user.tier,
       lastCheckIn: user.lastCheckIn,
-      hasNostrKeys: !!user.nostrPrivateKey,
+      hasNostrKeys: !!user.nostrPrivateKey, // Only true for email users who haven't exported
+      canExportKeys: user.authType === "email" && !!user.nostrPrivateKey,
       createdAt: user.createdAt,
     };
   }),
