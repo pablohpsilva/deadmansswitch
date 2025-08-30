@@ -1,0 +1,37 @@
+# Database
+DATABASE_URL=postgresql://postgres:your_secure_password_change_me@localhost:5432/deadmansswitch
+POSTGRES_PASSWORD=your_secure_password_change_me
+
+# Security
+JWT_SECRET=your-jwt-secret-change-in-production-make-it-very-long
+ENCRYPTION_KEY=your-encryption-key-change-in-production-32-chars-long
+
+# Server
+NODE_ENV=development
+PORT=3001
+FRONTEND_URL=http://localhost:3000
+
+# Email Service (choose one)
+# SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+
+# Or SendGrid
+SENDGRID_API_KEY=your-sendgrid-api-key
+
+# Or AWS SES
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+
+# Redis (for caching and job queuing)
+REDIS_URL=redis://localhost:6379
+
+# Nostr
+DEFAULT_NOSTR_RELAYS=wss://relay.damus.io,wss://nos.lol,wss://relay.nostr.band
