@@ -1,6 +1,4 @@
-import { Suspense } from "react";
-import { LoginClient } from "@/components/auth/login-client";
-import { LoginSkeleton } from "@/components/auth/login-skeleton";
+import { LoginClientWrapper } from "@/components/auth/login-client-wrapper";
 
 // Server Component for SEO and initial render
 export default function LoginPage() {
@@ -26,10 +24,8 @@ export default function LoginPage() {
         </div>
       </nav>
 
-      {/* Main content with Suspense for streaming */}
-      <Suspense fallback={<LoginSkeleton />}>
-        <LoginClient />
-      </Suspense>
+      {/* Main content - client-side only to avoid SSR issues */}
+      <LoginClientWrapper />
     </div>
   );
 }

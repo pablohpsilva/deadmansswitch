@@ -4,18 +4,26 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, Mail, Zap, ArrowLeft } from "lucide-react";
+import { Shield, Mail, Zap, ArrowLeft, Chrome } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthMutations } from "@/hooks/useAuthMutations";
+import { WalletConnect } from "./wallet-connect";
+import { BrowserConnect } from "./browser-connect";
 
 export function LoginClient() {
   const router = useRouter();
-  const [authMethod, setAuthMethod] = useState<"email" | "nostr" | null>(null);
+  const [authMethod, setAuthMethod] = useState<
+    "email" | "browser" | "nostr" | null
+  >(null);
   const [email, setEmail] = useState("");
   const [tempPassword, setTempPassword] = useState("");
-  const [step, setStep] = useState<"method" | "email-input" | "password-input">(
-    "method"
-  );
+  const [step, setStep] = useState<
+    | "method"
+    | "email-input"
+    | "password-input"
+    | "browser-extension"
+    | "nostr-wallet"
+  >("method");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const {
@@ -74,29 +82,65 @@ export function LoginClient() {
     }
   };
 
+  const handleBrowserAuth = async () => {
+    setAuthMethod("browser");
+    setStep("browser-extension");
+    setErrors({});
+  };
+
   const handleNostrAuth = async () => {
+    setAuthMethod("nostr");
+    setStep("nostr-wallet");
+    setErrors({});
+  };
+
+  const handleWalletSuccess = async (
+    publicKey: string,
+    signature: string,
+    message: string
+  ) => {
     try {
-      // TODO: Implement actual Nostr wallet connection
-      // For now, we'll simulate the process
-      console.log("Connecting with Nostr wallet");
-
-      // This would normally involve wallet connection and signing
-      // await loginWithNostr.mutateAsync({
-      //   publicKey,
-      //   signature,
-      //   message
-      // });
-
-      // Placeholder for development
-      setErrors({ nostr: "Nostr integration coming soon!" });
+      await loginWithNostr.mutateAsync({
+        publicKey,
+        signature,
+        message,
+      });
+      // Navigation handled by the mutation's onSuccess
     } catch (error) {
       setErrors({
-        nostr:
-          error instanceof Error
-            ? error.message
-            : "Failed to connect with Nostr wallet",
+        nostr: error instanceof Error ? error.message : "Authentication failed",
       });
     }
+  };
+
+  const handleBrowserSuccess = async (
+    publicKey: string,
+    signature: string,
+    message: string,
+    signedEvent?: any
+  ) => {
+    try {
+      await loginWithNostr.mutateAsync({
+        publicKey,
+        signature,
+        message,
+        signedEvent,
+      });
+      // Navigation handled by the mutation's onSuccess
+    } catch (error) {
+      setErrors({
+        browser:
+          error instanceof Error ? error.message : "Authentication failed",
+      });
+    }
+  };
+
+  const handleBrowserError = (error: string) => {
+    setErrors({ browser: error });
+  };
+
+  const handleWalletError = (error: string) => {
+    setErrors({ nostr: error });
   };
 
   return (
@@ -116,6 +160,9 @@ export function LoginClient() {
               {step === "email-input" && "Enter your email address"}
               {step === "password-input" &&
                 "Check your email for the login code"}
+              {step === "browser-extension" && "Connect via browser extension"}
+              {step === "nostr-wallet" &&
+                "Connect your Nostr wallet for authentication"}
             </p>
           </div>
 
@@ -143,6 +190,26 @@ export function LoginClient() {
               </button>
 
               <button
+                onClick={handleBrowserAuth}
+                disabled={isAuthenticating}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-green-300 hover:bg-green-50 transition-colors text-left disabled:opacity-50"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Chrome className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">
+                      Browser Extension
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Connect with your Nostr browser extension
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
                 onClick={() => {
                   setAuthMethod("nostr");
                   handleNostrAuth();
@@ -164,10 +231,6 @@ export function LoginClient() {
                   </div>
                 </div>
               </button>
-
-              {errors.nostr && (
-                <div className="text-red-600 text-sm mt-2">{errors.nostr}</div>
-              )}
 
               <div className="text-center pt-4">
                 <p className="text-sm text-gray-600">
@@ -290,6 +353,56 @@ export function LoginClient() {
               >
                 Need a new code? Click here
               </button>
+            </div>
+          )}
+
+          {/* Browser Extension Connection */}
+          {step === "browser-extension" && (
+            <div className="space-y-6">
+              <button
+                onClick={() => setStep("method")}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </button>
+
+              <BrowserConnect
+                onSuccess={handleBrowserSuccess}
+                onError={handleBrowserError}
+                isLoading={isAuthenticating}
+              />
+
+              {errors.browser && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="text-red-800 text-sm">{errors.browser}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Nostr Wallet Connection */}
+          {step === "nostr-wallet" && (
+            <div className="space-y-6">
+              <button
+                onClick={() => setStep("method")}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </button>
+
+              <WalletConnect
+                onSuccess={handleWalletSuccess}
+                onError={handleWalletError}
+                isLoading={isAuthenticating}
+              />
+
+              {errors.nostr && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="text-red-800 text-sm">{errors.nostr}</div>
+                </div>
+              )}
             </div>
           )}
 

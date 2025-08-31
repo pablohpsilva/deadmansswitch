@@ -5,6 +5,7 @@ import { db } from "@/db/connection";
 import { users, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
+import crypto from "crypto";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -19,6 +20,7 @@ const PRICING = {
       amount: 1500, // $15.00 in cents
       currency: "usd",
       interval: "year",
+      lightning: 30000, // ~30,000 sats ($15 at $50k BTC)
     },
   },
   lifetime: {
@@ -26,6 +28,7 @@ const PRICING = {
       priceId: process.env.STRIPE_LIFETIME_PRICE_ID || "price_lifetime",
       amount: 6000, // $60.00 in cents
       currency: "usd",
+      lightning: 120000, // ~120,000 sats ($60 at $50k BTC)
     },
   },
 };
@@ -50,6 +53,7 @@ export const paymentsRouter = createTRPCRouter({
         name: "Premium",
         price: PRICING.premium.yearly.amount / 100,
         interval: "year",
+        lightning: PRICING.premium.yearly.lightning,
         features: [
           "Up to 100 emails",
           "10 recipients per email",
@@ -64,6 +68,7 @@ export const paymentsRouter = createTRPCRouter({
         name: "Lifetime",
         price: PRICING.lifetime.onetime.amount / 100,
         interval: "one-time",
+        lightning: PRICING.lifetime.onetime.lightning,
         features: [
           "Up to 100 emails",
           "10 recipients per email",
@@ -386,6 +391,235 @@ export const paymentsRouter = createTRPCRouter({
       }
 
       return { success: true };
+    }),
+
+  // Lightning Network payment endpoints
+
+  // Create Lightning invoice for premium subscription
+  createLightningPremiumInvoice: protectedProcedure.mutation(
+    async ({ ctx }) => {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, ctx.user.id));
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      if (user.tier !== "free") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User already has a subscription",
+        });
+      }
+
+      // Generate a unique payment hash for tracking
+      const paymentHash = crypto.randomBytes(32).toString("hex");
+      const description = `Dead Man's Switch Premium (1 year) - User ${user.id}`;
+
+      // Log the pending payment
+      await db.insert(auditLogs).values({
+        userId: user.id,
+        action: "lightning_invoice_created",
+        details: JSON.stringify({
+          tier: "premium",
+          amount: PRICING.premium.yearly.lightning,
+          paymentHash,
+          description,
+        }),
+      });
+
+      return {
+        amount: PRICING.premium.yearly.lightning,
+        description,
+        paymentHash,
+        memo: "Dead Man's Switch Premium Subscription",
+      };
+    }
+  ),
+
+  // Create Lightning invoice for lifetime purchase
+  createLightningLifetimeInvoice: protectedProcedure.mutation(
+    async ({ ctx }) => {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, ctx.user.id));
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      if (user.tier === "lifetime") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User already has lifetime access",
+        });
+      }
+
+      // Generate a unique payment hash for tracking
+      const paymentHash = crypto.randomBytes(32).toString("hex");
+      const description = `Dead Man's Switch Lifetime - User ${user.id}`;
+
+      // Log the pending payment
+      await db.insert(auditLogs).values({
+        userId: user.id,
+        action: "lightning_invoice_created",
+        details: JSON.stringify({
+          tier: "lifetime",
+          amount: PRICING.lifetime.onetime.lightning,
+          paymentHash,
+          description,
+        }),
+      });
+
+      return {
+        amount: PRICING.lifetime.onetime.lightning,
+        description,
+        paymentHash,
+        memo: "Dead Man's Switch Lifetime Access",
+      };
+    }
+  ),
+
+  // Verify Lightning payment and upgrade account
+  verifyLightningPayment: protectedProcedure
+    .input(
+      z.object({
+        paymentHash: z.string(),
+        preimage: z.string(),
+        tier: z.enum(["premium", "lifetime"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { paymentHash, preimage, tier } = input;
+
+      // Verify the preimage matches the payment hash
+      const expectedHash = crypto
+        .createHash("sha256")
+        .update(Buffer.from(preimage, "hex"))
+        .digest("hex");
+      if (expectedHash !== paymentHash) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid payment proof",
+        });
+      }
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, ctx.user.id));
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // Check if payment was already processed
+      const existingPayment = await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.userId, user.id));
+
+      const alreadyProcessed = existingPayment.some(
+        (log) =>
+          log.details?.includes(paymentHash) &&
+          log.action === "lightning_payment_verified"
+      );
+
+      if (alreadyProcessed) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Payment already processed",
+        });
+      }
+
+      // Upgrade the user account
+      const updates: Partial<typeof users.$inferInsert> = {
+        tier,
+        updatedAt: new Date(),
+      };
+
+      if (tier === "premium") {
+        // Premium is a yearly subscription
+        updates.subscriptionEnds = new Date(
+          Date.now() + 365 * 24 * 60 * 60 * 1000
+        ); // 1 year
+        updates.subscriptionStatus = "active";
+      }
+
+      await db.update(users).set(updates).where(eq(users.id, user.id));
+
+      // Log the successful payment
+      await db.insert(auditLogs).values({
+        userId: user.id,
+        action: "lightning_payment_verified",
+        details: JSON.stringify({
+          tier,
+          paymentHash,
+          preimage,
+          upgradedAt: new Date(),
+          amount:
+            tier === "premium"
+              ? PRICING.premium.yearly.lightning
+              : PRICING.lifetime.onetime.lightning,
+        }),
+      });
+
+      return {
+        success: true,
+        message: `Account upgraded to ${tier}`,
+        tier,
+        subscriptionEnds: updates.subscriptionEnds,
+      };
+    }),
+
+  // Get Lightning payment status
+  getLightningPaymentStatus: protectedProcedure
+    .input(z.object({ paymentHash: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { paymentHash } = input;
+
+      const logs = await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.userId, ctx.user.id));
+
+      const invoiceLog = logs.find(
+        (log) =>
+          log.details?.includes(paymentHash) &&
+          log.action === "lightning_invoice_created"
+      );
+
+      const paymentLog = logs.find(
+        (log) =>
+          log.details?.includes(paymentHash) &&
+          log.action === "lightning_payment_verified"
+      );
+
+      if (!invoiceLog) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
+      }
+
+      return {
+        paymentHash,
+        status: paymentLog ? "paid" : "pending",
+        createdAt: invoiceLog.createdAt,
+        paidAt: paymentLog?.createdAt || null,
+      };
     }),
 });
 

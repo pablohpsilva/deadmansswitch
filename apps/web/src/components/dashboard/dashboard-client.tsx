@@ -7,6 +7,7 @@ import { EmailForm } from "./EmailForm";
 import { UserProfile } from "./UserProfile";
 import { TierLimits } from "./TierLimits";
 import { EmailDetailView } from "./EmailDetailView";
+import { WalletManager } from "./WalletManager";
 import { useDashboardData } from "@/hooks/useAdvancedQueries";
 import { useBackgroundSync } from "@/hooks/useAdvancedQueries";
 import { useUserPreferences } from "@/hooks/usePersistedState";
@@ -213,6 +214,9 @@ export function DashboardClient() {
                 userTier={user.tier}
               />
             )}
+
+            {/* Wallet Manager */}
+            <WalletManager className="mt-6" />
           </div>
 
           {/* Main Content Area */}

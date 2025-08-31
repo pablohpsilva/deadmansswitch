@@ -6,6 +6,10 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=web...",
+    "dev:backend": "turbo dev --filter=backend...",
+    "dev:email": "turbo dev --filter=email...",
+    "dev:db": "turbo dev --filter=db...",
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "turbo format",

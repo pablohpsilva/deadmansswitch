@@ -108,6 +108,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@getalby/sdk':
+        specifier: ^3.8.0
+        version: 3.9.0(typescript@5.9.2)
       '@hookform/resolvers':
         specifier: ^3.3.0
         version: 3.10.0(react-hook-form@7.62.0)
@@ -1849,6 +1852,16 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@getalby/sdk@3.9.0(typescript@5.9.2):
+    resolution: {integrity: sha512-qgNXr4FsX0a+PPvWgb112Q8h1/ov31zVP4LjsDYr5+W0CkrRbW9pQnsHPycVPLB5H8k5WVRRNkxYBBoWIBAwyw==}
+    engines: {node: '>=14'}
+    dependencies:
+      emittery: 1.2.0
+      nostr-tools: 2.9.4(typescript@5.9.2)
+    transitivePeerDependencies:
+      - typescript
+    dev: false
 
   /@hono/node-server@1.19.1(hono@4.9.5):
     resolution: {integrity: sha512-h44e5s+ByUriaRIbeS/C74O8v90m0A95luyYQGMF7KEn96KkYMXO7bZAwombzTpjQTU4e0TkU8U1WBIXlwuwtA==}
@@ -3870,6 +3883,11 @@ packages:
   /electron-to-chromium@1.5.211:
     resolution: {integrity: sha512-IGBvimJkotaLzFnwIVgW9/UD/AOJ2tByUmeOrtqBfACSbAw5b1G0XpvdaieKyc7ULmbwXVx+4e4Be8pOPBrYkw==}
 
+  /emittery@1.2.0:
+    resolution: {integrity: sha512-KxdRyyFcS85pH3dnU8Y5yFUm2YJdaHwcBZWrfG8o89ZY9a13/f9itbN+YG3ELbBo9Pg5zvIozstmuV8bX13q6g==}
+    engines: {node: '>=14.16'}
+    dev: false
+
   /emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
     dev: false
@@ -4976,6 +4994,25 @@ packages:
       '@scure/bip39': 1.2.1
       nostr-wasm: 0.1.0
       typescript: 5.9.2
+    dev: false
+
+  /nostr-tools@2.9.4(typescript@5.9.2):
+    resolution: {integrity: sha512-Powumwkp+EWbdK1T8IsEX4daTLQhtWJvitfZ6OP2BdU1jJZvNlUp3SQB541UYw4uc9jgLbxZW6EZSdZoSfIygQ==}
+    peerDependencies:
+      typescript: '>=5.0.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@noble/ciphers': 0.5.3
+      '@noble/curves': 1.2.0
+      '@noble/hashes': 1.3.1
+      '@scure/base': 1.1.1
+      '@scure/bip32': 1.3.1
+      '@scure/bip39': 1.2.1
+      typescript: 5.9.2
+    optionalDependencies:
+      nostr-wasm: 0.1.0
     dev: false
 
   /nostr-wasm@0.1.0:
