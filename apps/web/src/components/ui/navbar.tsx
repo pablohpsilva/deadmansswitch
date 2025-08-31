@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Shield } from "lucide-react";
@@ -16,7 +17,12 @@ interface NavbarProps {
   isMobileMenuOpen?: boolean;
 }
 
-export function Navbar({ user, onLogout, onMobileMenuToggle, isMobileMenuOpen }: NavbarProps) {
+export function Navbar({
+  user,
+  onLogout,
+  onMobileMenuToggle,
+  isMobileMenuOpen,
+}: NavbarProps) {
   const router = useRouter();
 
   return (
