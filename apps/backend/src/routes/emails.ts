@@ -14,18 +14,21 @@ const TIER_LIMITS = {
     maxRecipients: 2,
     maxSubjectLength: 125,
     maxContentLength: 2000,
+    maxRelays: 1, // Limited to single relay - less decentralization
   },
   premium: {
     maxEmails: 100,
     maxRecipients: 10,
     maxSubjectLength: 300,
     maxContentLength: 10000,
+    maxRelays: 5, // Multiple relays for better decentralization
   },
   lifetime: {
     maxEmails: 100,
     maxRecipients: 10,
     maxSubjectLength: 300,
     maxContentLength: 10000,
+    maxRelays: 10, // Maximum relays for best decentralization
   },
 };
 

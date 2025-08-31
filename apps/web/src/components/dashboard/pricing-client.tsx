@@ -330,6 +330,8 @@ export function PricingClient() {
                     subjectLength: "125 chars",
                     contentLength: "2K chars",
                     scheduling: "Basic",
+                    relays: "1 relay",
+                    decentralization: "Basic",
                     encryption: true,
                     support: false,
                     updates: false,
@@ -343,6 +345,8 @@ export function PricingClient() {
                     subjectLength: "300 chars",
                     contentLength: "10K chars",
                     scheduling: "Advanced",
+                    relays: "5 relays",
+                    decentralization: "Enhanced",
                     encryption: true,
                     support: true,
                     updates: false,
@@ -356,6 +360,8 @@ export function PricingClient() {
                     subjectLength: "300 chars",
                     contentLength: "10K chars",
                     scheduling: "Advanced",
+                    relays: "10 relays",
+                    decentralization: "Maximum",
                     encryption: true,
                     support: true,
                     updates: true,
@@ -368,6 +374,8 @@ export function PricingClient() {
                 subjectLength: "Subject Length",
                 contentLength: "Content Length",
                 scheduling: "Scheduling",
+                relays: "Relay Storage",
+                decentralization: "Decentralization",
                 encryption: "Nostr Encryption",
                 support: "Priority Support",
                 updates: "Lifetime Updates",
@@ -405,11 +413,16 @@ export function PricingClient() {
                 answer:
                   "We offer a 30-day money-back guarantee for all card payments through Stripe. Cryptocurrency payments are final and non-refundable due to their irreversible nature.",
               },
-              {
-                question: "What payment methods do you accept?",
-                answer:
-                  "We currently accept all major credit cards through Stripe. Bitcoin and Lightning payment options are planned for future releases.",
-              },
+                          {
+              question: "What are relays and why do they matter?",
+              answer:
+                "Relays are Nostr servers that store your encrypted messages across the decentralized network. More relays mean better redundancy and decentralization - if one goes down, your messages are still safe on others. Free users get 1 relay, while premium users get multiple relays for maximum security."
+            },
+            {
+              question: "What payment methods do you accept?",
+              answer:
+                "We currently accept all major credit cards through Stripe. Bitcoin and Lightning payment options are planned for future releases.",
+            },
               {
                 question: "Is my data secure during upgrades?",
                 answer:

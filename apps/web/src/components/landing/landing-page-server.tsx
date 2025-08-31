@@ -161,6 +161,7 @@ export async function LandingPageServer() {
                 "2,000 character content",
                 "Basic scheduling",
                 "Nostr encryption",
+                "Single relay storage",
               ]}
               buttonText="Get Started Free"
               buttonVariant="outline"
@@ -177,6 +178,7 @@ export async function LandingPageServer() {
                 "10,000 character content",
                 "Advanced scheduling",
                 "Nostr encryption",
+                "Multi-relay storage (5 relays)",
                 "Priority support",
               ]}
               buttonText="Upgrade to Premium"
@@ -195,6 +197,7 @@ export async function LandingPageServer() {
                 "10,000 character content",
                 "Advanced scheduling",
                 "Nostr encryption",
+                "Maximum relay storage (10 relays)",
                 "Lifetime updates",
                 "Priority support",
               ]}
