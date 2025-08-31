@@ -1,10 +1,10 @@
 import type { Context } from "hono";
-import { db } from "@/db/connection";
-import { verifyToken } from "@/lib/auth";
+import { db } from "../db/connection";
+import { verifyToken } from "./auth";
 
 export interface TRPCContext {
   user?: {
-    id: string;
+    userId: string;
     email?: string;
     nostrPublicKey?: string;
     tier: "free" | "premium" | "lifetime";
@@ -27,7 +27,9 @@ export async function createContext(opts: {
     authHeader = opts.req.headers.authorization;
   }
 
-  const token = authHeader?.replace("Bearer ", "");
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.replace("Bearer ", "")
+    : null;
 
   let user;
   if (token) {

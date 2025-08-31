@@ -1,5 +1,20 @@
 import * as nostrTools from "nostr-tools";
 
+// Utility functions for hex/bytes conversion
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  }
+  return bytes;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Define types locally since we're not sure about nostr-tools exports
 export interface NostrEvent {
   id: string;
@@ -18,12 +33,12 @@ export interface UnsignedNostrEvent {
   tags: string[][];
   content: string;
 }
-import { db } from "@/db/connection";
-import { nostrRelays } from "@/db/schema";
+import { db } from "../db/connection";
+import { nostrRelays } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export class NostrService {
-  private pool: any;
+  private pool: any; // SimplePool interface varies by version, using flexible typing
 
   constructor() {
     // Initialize pool if SimplePool is available
@@ -75,7 +90,7 @@ export class NostrService {
         tags: [["p", recipientPubkey]],
         content,
         pubkey: nostrTools.getPublicKey
-          ? nostrTools.getPublicKey(senderPrivkey)
+          ? nostrTools.getPublicKey(hexToBytes(senderPrivkey))
           : senderPrivkey + "_pubkey",
       };
 
@@ -85,19 +100,36 @@ export class NostrService {
         id: nostrTools.getEventHash
           ? nostrTools.getEventHash(messageEvent)
           : Math.random().toString(36),
-        sig: nostrTools.getSignature
-          ? nostrTools.getSignature(messageEvent, senderPrivkey)
+        sig: nostrTools.finalizeEvent
+          ? nostrTools.finalizeEvent(messageEvent, hexToBytes(senderPrivkey))
+              .sig
           : "mock_signature",
       };
 
       // Encrypt the signed message using NIP17 gift wrap if available
       if (nostrTools.nip17?.wrapEvent) {
-        const giftWrap = await nostrTools.nip17.wrapEvent(
-          signedMessage,
-          recipientPubkey,
-          senderPrivkey
-        );
-        return giftWrap;
+        try {
+          // Note: The nip17.wrapEvent API may vary between versions
+          // Some versions expect hex strings, others expect Uint8Array
+          const recipientKey =
+            typeof recipientPubkey === "string"
+              ? hexToBytes(recipientPubkey)
+              : recipientPubkey;
+          const senderKey =
+            typeof senderPrivkey === "string"
+              ? hexToBytes(senderPrivkey)
+              : senderPrivkey;
+
+          const giftWrap = await nostrTools.nip17.wrapEvent(
+            signedMessage as any, // Type varies between nostr-tools versions
+            recipientKey as any,
+            senderKey as any
+          );
+          return giftWrap;
+        } catch (error) {
+          console.warn("NIP17 wrapEvent failed:", error);
+          return signedMessage;
+        }
       } else {
         console.warn(
           "NIP17 not available, returning signed message without gift wrap"
@@ -117,11 +149,16 @@ export class NostrService {
   ): Promise<NostrEvent | null> {
     try {
       if (nostrTools.nip17?.unwrapEvent) {
+        const recipientKey =
+          typeof recipientPrivkey === "string"
+            ? hexToBytes(recipientPrivkey)
+            : recipientPrivkey;
+
         const unwrapped = await nostrTools.nip17.unwrapEvent(
           giftWrapEvent,
-          recipientPrivkey
+          recipientKey as any // Type varies between nostr-tools versions
         );
-        return unwrapped;
+        return unwrapped as NostrEvent;
       } else {
         console.warn("NIP17 unwrap not available, returning original event");
         return giftWrapEvent;
@@ -155,7 +192,7 @@ export class NostrService {
     };
 
     const senderPubkey = nostrTools.getPublicKey
-      ? nostrTools.getPublicKey(senderPrivkey)
+      ? nostrTools.getPublicKey(hexToBytes(senderPrivkey))
       : senderPrivkey + "_pubkey";
 
     // Encrypt the payload for the sender (self-encryption for storage)
@@ -252,7 +289,7 @@ This message was automatically sent because the sender has been inactive.
           tags: [["t", "deadmansswitch"]],
           content: `A Dead Man's Switch has been triggered. The designated recipient has been notified via email.`,
           pubkey: nostrTools.getPublicKey
-            ? nostrTools.getPublicKey(senderPrivkey)
+            ? nostrTools.getPublicKey(hexToBytes(senderPrivkey))
             : senderPrivkey + "_pubkey",
         };
 
@@ -261,8 +298,11 @@ This message was automatically sent because the sender has been inactive.
           id: nostrTools.getEventHash
             ? nostrTools.getEventHash(publicNotification)
             : Math.random().toString(36),
-          sig: nostrTools.getSignature
-            ? nostrTools.getSignature(publicNotification, senderPrivkey)
+          sig: nostrTools.finalizeEvent
+            ? nostrTools.finalizeEvent(
+                publicNotification,
+                hexToBytes(senderPrivkey)
+              ).sig
             : "mock_signature",
         };
 
@@ -287,13 +327,21 @@ This message was automatically sent because the sender has been inactive.
         const testPool = new nostrTools.SimplePool();
 
         // Try to fetch a recent event to test connectivity
-        const events = await testPool.list(
+        // Try to get a simple connection test
+        const events = await testPool.subscribeMany(
           [relayUrl],
-          [{ kinds: [1], limit: 1 }]
+          [{ kinds: [1], limit: 1 }],
+          {
+            onevent: () => {},
+            oneose: () => {},
+          }
         );
 
+        // Wait a moment for connection attempt
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         testPool.close([relayUrl]);
-        return events.length >= 0; // Even 0 events means successful connection
+        return true; // If we got here without error, connection is likely working
       } else {
         console.warn("SimplePool not available, using mock connectivity test");
         return true; // Assume connectivity for now

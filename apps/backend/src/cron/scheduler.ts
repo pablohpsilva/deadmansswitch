@@ -1,10 +1,10 @@
-import cron from "node-cron";
-import { db } from "@/db/connection";
-import { users, deadmanEmails, emailRecipients, auditLogs } from "@/db/schema";
+import * as cron from "node-cron";
+import { db } from "../db/connection";
+import { users, deadmanEmails, emailRecipients, auditLogs } from "../db/schema";
 import { eq, and, lt, lte, isNull, isNotNull } from "drizzle-orm";
-import { sendDeadmanEmail } from "@/services/email";
-import { nostrService } from "@/services/nostr";
-import { decryptData } from "@/lib/auth";
+import { sendDeadmanEmail } from "../services/email";
+import { nostrService } from "../services/nostr";
+import { decryptData } from "../lib/auth";
 
 export function startCronJobs() {
   console.log("🕐 Starting cron jobs...");
@@ -187,7 +187,7 @@ async function sendEmail(
         isSent: true,
         sentAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as any) // Type assertion to handle Drizzle ORM type inference issues
       .where(eq(deadmanEmails.id, email.id));
 
     // Send notification via Nostr if possible
@@ -223,7 +223,7 @@ async function sendEmail(
         successCount: sentResults.filter((r) => r.success).length,
         results: sentResults,
       }),
-    });
+    } as any);
 
     console.log(`🎉 Successfully processed email ${email.id}`);
   } catch (error) {
@@ -238,7 +238,7 @@ async function sendEmail(
         title: email.title,
         error: error.message,
       }),
-    });
+    } as any);
   }
 }
 

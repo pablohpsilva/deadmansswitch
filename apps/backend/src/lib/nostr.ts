@@ -20,8 +20,6 @@ export async function verifyNostrSignature(
     // Try different verification methods based on available exports
     if (typeof nostrTools.verifyEvent === "function") {
       return nostrTools.verifyEvent(event);
-    } else if (typeof nostrTools.verifySignature === "function") {
-      return nostrTools.verifySignature(event);
     } else {
       // Fallback - just return true for now (implement proper verification later)
       console.warn("No verification method available in nostr-tools");
@@ -36,7 +34,11 @@ export async function verifyNostrSignature(
 export function generatePublicKeyFromPrivate(privateKey: string): string {
   try {
     if (typeof nostrTools.getPublicKey === "function") {
-      return nostrTools.getPublicKey(privateKey);
+      // Convert hex string to Uint8Array for nostr-tools compatibility
+      const privateKeyBytes = new Uint8Array(
+        privateKey.match(/.{2}/g)?.map((byte) => parseInt(byte, 16)) || []
+      );
+      return nostrTools.getPublicKey(privateKeyBytes);
     } else {
       // Fallback implementation
       console.warn("getPublicKey not available in nostr-tools, using fallback");
@@ -62,8 +64,6 @@ export function validateNostrEvent(event: NostrEvent): boolean {
   try {
     if (typeof nostrTools.verifyEvent === "function") {
       return nostrTools.verifyEvent(event);
-    } else if (typeof nostrTools.verifySignature === "function") {
-      return nostrTools.verifySignature(event);
     } else {
       return true; // Fallback
     }

@@ -1,7 +1,12 @@
-import nodemailer from "nodemailer";
+import * as nodemailer from "nodemailer";
 
 // Email transporter setup
 let transporter: nodemailer.Transporter;
+
+// Test helper function to reset transporter
+export function resetTransporter() {
+  transporter = null as any;
+}
 
 function getEmailTransporter() {
   if (!transporter) {
@@ -18,7 +23,7 @@ function getEmailTransporter() {
       const port = Number(process.env.SMTP_PORT) || 587;
       const secure = process.env.SMTP_SECURE === "true" || port === 465;
 
-      transporter = nodemailer.createTransporter({
+      transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: port,
         secure: secure, // true for 465, false for other ports
@@ -60,7 +65,7 @@ function getEmailTransporter() {
     } else if (process.env.SENDGRID_API_KEY) {
       console.log("📧 Using SendGrid for email service (third-party)");
       // SendGrid configuration
-      transporter = nodemailer.createTransporter({
+      transporter = nodemailer.createTransport({
         service: "SendGrid",
         auth: {
           user: "apikey",
@@ -73,13 +78,14 @@ function getEmailTransporter() {
     ) {
       console.log("📧 Using AWS SES for email service (third-party)");
       // AWS SES configuration
-      transporter = nodemailer.createTransporter({
-        service: "SES",
+      transporter = nodemailer.createTransport({
+        host: `email.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com`,
+        port: 587,
+        secure: false,
         auth: {
           user: process.env.AWS_ACCESS_KEY_ID,
           pass: process.env.AWS_SECRET_ACCESS_KEY,
         },
-        region: process.env.AWS_REGION || "us-east-1",
       });
     } else {
       console.warn(
@@ -89,7 +95,7 @@ function getEmailTransporter() {
         "💡 Configure SMTP_HOST, SMTP_USER, and SMTP_PASSWORD for self-hosted email"
       );
       // Create a "test" transporter that doesn't actually send emails
-      transporter = nodemailer.createTransporter({
+      transporter = nodemailer.createTransport({
         streamTransport: true,
         newline: "unix",
         buffer: true,
