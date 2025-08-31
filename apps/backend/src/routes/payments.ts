@@ -94,7 +94,7 @@ export const paymentsRouter = createTRPCRouter({
         subscriptionEnds: users.subscriptionEnds,
       })
       .from(users)
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     if (!user) {
       throw new TRPCError({
@@ -137,7 +137,7 @@ export const paymentsRouter = createTRPCRouter({
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, ctx.user.id));
+        .where(eq(users.id, ctx.user.userId));
 
       if (!user) {
         throw new TRPCError({
@@ -213,7 +213,7 @@ export const paymentsRouter = createTRPCRouter({
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, ctx.user.id));
+        .where(eq(users.id, ctx.user.userId));
 
       if (!user) {
         throw new TRPCError({
@@ -277,7 +277,7 @@ export const paymentsRouter = createTRPCRouter({
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     if (!user || !user.subscriptionId) {
       throw new TRPCError({
@@ -321,7 +321,7 @@ export const paymentsRouter = createTRPCRouter({
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     if (!user || !user.subscriptionId) {
       throw new TRPCError({
@@ -401,7 +401,7 @@ export const paymentsRouter = createTRPCRouter({
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, ctx.user.id));
+        .where(eq(users.id, ctx.user.userId));
 
       if (!user) {
         throw new TRPCError({
@@ -448,7 +448,7 @@ export const paymentsRouter = createTRPCRouter({
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, ctx.user.id));
+        .where(eq(users.id, ctx.user.userId));
 
       if (!user) {
         throw new TRPCError({
@@ -516,7 +516,7 @@ export const paymentsRouter = createTRPCRouter({
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, ctx.user.id));
+        .where(eq(users.id, ctx.user.userId));
 
       if (!user) {
         throw new TRPCError({
@@ -593,7 +593,7 @@ export const paymentsRouter = createTRPCRouter({
       const logs = await db
         .select()
         .from(auditLogs)
-        .where(eq(auditLogs.userId, ctx.user.id));
+        .where(eq(auditLogs.userId, ctx.user.userId));
 
       const invoiceLog = logs.find(
         (log) =>

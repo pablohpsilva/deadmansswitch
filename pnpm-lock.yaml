@@ -21,8 +21,8 @@ importers:
         specifier: ^1.12.0
         version: 1.19.1(hono@4.9.5)
       '@hono/trpc-server':
-        specifier: ^0.3.0
-        version: 0.3.4(@trpc/server@10.45.2)(hono@4.9.5)
+        specifier: ^0.3.2
+        version: 0.3.4(@trpc/server@11.5.0)(hono@4.9.5)
       '@scure/bip32':
         specifier: ^1.3.3
         version: 1.7.0
@@ -30,8 +30,8 @@ importers:
         specifier: ^1.2.2
         version: 1.6.0
       '@trpc/server':
-        specifier: ^10.45.0
-        version: 10.45.2
+        specifier: ^11.5.0
+        version: 11.5.0(typescript@5.9.2)
       bcrypt:
         specifier: ^5.1.0
         version: 5.1.1
@@ -1872,14 +1872,14 @@ packages:
       hono: 4.9.5
     dev: false
 
-  /@hono/trpc-server@0.3.4(@trpc/server@10.45.2)(hono@4.9.5):
+  /@hono/trpc-server@0.3.4(@trpc/server@11.5.0)(hono@4.9.5):
     resolution: {integrity: sha512-xFOPjUPnII70FgicDzOJy1ufIoBTu8eF578zGiDOrYOrYN8CJe140s9buzuPkX+SwJRYK8LjEBHywqZtxdm8aA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@trpc/server': ^10.10.0 || >11.0.0-rc
       hono: '>=4.*'
     dependencies:
-      '@trpc/server': 10.45.2
+      '@trpc/server': 11.5.0(typescript@5.9.2)
       hono: 4.9.5
     dev: false
 
@@ -3148,10 +3148,6 @@ packages:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       typescript: 5.9.2
-    dev: false
-
-  /@trpc/server@10.45.2:
-    resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
     dev: false
 
   /@trpc/server@11.5.0(typescript@5.9.2):

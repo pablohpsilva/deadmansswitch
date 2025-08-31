@@ -51,7 +51,7 @@ export const emailsRouter = createTRPCRouter({
         updatedAt: deadmanEmails.updatedAt,
       })
       .from(deadmanEmails)
-      .where(eq(deadmanEmails.userId, ctx.user.id));
+      .where(eq(deadmanEmails.userId, ctx.user.userId));
 
     return emails;
   }),
@@ -71,7 +71,10 @@ export const emailsRouter = createTRPCRouter({
         .select()
         .from(deadmanEmails)
         .where(
-          and(eq(deadmanEmails.id, id), eq(deadmanEmails.userId, ctx.user.id))
+          and(
+            eq(deadmanEmails.id, id),
+            eq(deadmanEmails.userId, ctx.user.userId)
+          )
         );
 
       if (!email) {
@@ -104,11 +107,13 @@ export const emailsRouter = createTRPCRouter({
           const [user] = await db
             .select()
             .from(users)
-            .where(eq(users.id, ctx.user.id));
+            .where(eq(users.id, ctx.user.userId));
 
           if (user?.nostrPrivateKey) {
             const privateKey = decryptData(user.nostrPrivateKey);
-            const userRelays = await nostrService.getUserRelays(ctx.user.id);
+            const userRelays = await nostrService.getUserRelays(
+              ctx.user.userId
+            );
 
             const emailData = await nostrService.retrieveEncryptedEmail(
               email.nostrEventId,
@@ -194,7 +199,7 @@ export const emailsRouter = createTRPCRouter({
       const [emailCount] = await db
         .select({ count: count() })
         .from(deadmanEmails)
-        .where(eq(deadmanEmails.userId, ctx.user.id));
+        .where(eq(deadmanEmails.userId, ctx.user.userId));
 
       if (emailCount.count >= limits.maxEmails) {
         throw new TRPCError({
@@ -223,7 +228,7 @@ export const emailsRouter = createTRPCRouter({
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.id, ctx.user.id));
+          .where(eq(users.id, ctx.user.userId));
 
         if (!user?.nostrPrivateKey) {
           throw new TRPCError({
@@ -236,7 +241,7 @@ export const emailsRouter = createTRPCRouter({
 
         // Store encrypted email data in Nostr
         const nostrEventId = await nostrService.storeEncryptedEmail(
-          ctx.user.id,
+          ctx.user.userId,
           {
             subject,
             content,
@@ -249,7 +254,7 @@ export const emailsRouter = createTRPCRouter({
         const [newEmail] = await db
           .insert(deadmanEmails)
           .values({
-            userId: ctx.user.id,
+            userId: ctx.user.userId,
             title,
             recipientCount: recipients.length,
             scheduledFor,
@@ -316,7 +321,10 @@ export const emailsRouter = createTRPCRouter({
         .select()
         .from(deadmanEmails)
         .where(
-          and(eq(deadmanEmails.id, id), eq(deadmanEmails.userId, ctx.user.id))
+          and(
+            eq(deadmanEmails.id, id),
+            eq(deadmanEmails.userId, ctx.user.userId)
+          )
         );
 
       if (!existingEmail) {
@@ -363,13 +371,15 @@ export const emailsRouter = createTRPCRouter({
           const [user] = await db
             .select()
             .from(users)
-            .where(eq(users.id, ctx.user.id));
+            .where(eq(users.id, ctx.user.userId));
 
           if (user?.nostrPrivateKey) {
             const privateKey = decryptData(user.nostrPrivateKey);
 
             // Get current data first
-            const userRelays = await nostrService.getUserRelays(ctx.user.id);
+            const userRelays = await nostrService.getUserRelays(
+              ctx.user.userId
+            );
             const currentData = await nostrService.retrieveEncryptedEmail(
               existingEmail.nostrEventId,
               privateKey,
@@ -388,7 +398,7 @@ export const emailsRouter = createTRPCRouter({
 
             // Store updated data in Nostr
             const newNostrEventId = await nostrService.storeEncryptedEmail(
-              ctx.user.id,
+              ctx.user.userId,
               updatedData,
               privateKey
             );
@@ -462,7 +472,10 @@ export const emailsRouter = createTRPCRouter({
         .select()
         .from(deadmanEmails)
         .where(
-          and(eq(deadmanEmails.id, id), eq(deadmanEmails.userId, ctx.user.id))
+          and(
+            eq(deadmanEmails.id, id),
+            eq(deadmanEmails.userId, ctx.user.userId)
+          )
         );
 
       if (!existingEmail) {
@@ -505,7 +518,10 @@ export const emailsRouter = createTRPCRouter({
         .select()
         .from(deadmanEmails)
         .where(
-          and(eq(deadmanEmails.id, id), eq(deadmanEmails.userId, ctx.user.id))
+          and(
+            eq(deadmanEmails.id, id),
+            eq(deadmanEmails.userId, ctx.user.userId)
+          )
         );
 
       if (!emailData.length) {

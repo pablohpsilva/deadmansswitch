@@ -245,7 +245,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500">
-                {connected ? "Connected" : "Connect wallet"}
+                {nwcConnected ? "Connected" : "Connect wallet"}
               </p>
             </div>
           </div>

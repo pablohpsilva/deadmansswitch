@@ -8,6 +8,7 @@ import { UserProfile } from "./UserProfile";
 import { TierLimits } from "./TierLimits";
 import { EmailDetailView } from "./EmailDetailView";
 import { WalletManager } from "./WalletManager";
+import { AuthDebugger } from "../debug/auth-debug";
 import { useDashboardData } from "@/hooks/useAdvancedQueries";
 import { useBackgroundSync } from "@/hooks/useAdvancedQueries";
 import { useUserPreferences } from "@/hooks/usePersistedState";
@@ -31,6 +32,7 @@ export function DashboardClient() {
     isLoading: dashboardLoading,
     isReady,
     hasErrors,
+    queryStatus,
   } = useDashboardData();
 
   // Background sync for real-time updates
@@ -86,10 +88,57 @@ export function DashboardClient() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
-          <div className="mt-4 text-xs text-gray-500">
-            <p>Loading user data: {userLoading ? "⏳" : "✅"}</p>
-            <p>Loading emails: {emailsLoading ? "⏳" : "✅"}</p>
-            <p>Loading tier limits: {tierLoading ? "⏳" : "✅"}</p>
+          <div className="mt-4 text-xs text-gray-500 max-w-md">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center justify-between">
+                <span>User data:</span>
+                <span>
+                  {queryStatus.user.loading && "⏳ Loading..."}
+                  {queryStatus.user.success && "✅ Loaded"}
+                  {queryStatus.user.error && "❌ Failed"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Emails:</span>
+                <span>
+                  {queryStatus.emails.loading && "⏳ Loading..."}
+                  {queryStatus.emails.success && "✅ Loaded"}
+                  {queryStatus.emails.error && "❌ Failed"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Tier limits:</span>
+                <span>
+                  {queryStatus.tierLimits.loading && "⏳ Loading..."}
+                  {queryStatus.tierLimits.success && "✅ Loaded"}
+                  {queryStatus.tierLimits.error && "❌ Failed"}
+                </span>
+              </div>
+            </div>
+
+            {/* Show specific errors if any */}
+            {hasErrors && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-left">
+                <h4 className="font-medium text-red-800 mb-2">
+                  Connection Issues:
+                </h4>
+                <div className="text-red-700 text-xs space-y-1">
+                  {queryStatus.user.error && (
+                    <div>• User: {queryStatus.user.errorMsg}</div>
+                  )}
+                  {queryStatus.emails.error && (
+                    <div>• Emails: {queryStatus.emails.errorMsg}</div>
+                  )}
+                  {queryStatus.tierLimits.error && (
+                    <div>• Tier: {queryStatus.tierLimits.errorMsg}</div>
+                  )}
+                </div>
+                <div className="mt-3 text-xs text-red-600">
+                  💡 Try refreshing the page or check if the backend server is
+                  running.
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -252,6 +301,9 @@ export function DashboardClient() {
           </div>
         </div>
       </main>
+
+      {/* Debug helper in development */}
+      {process.env.NODE_ENV === "development" && <AuthDebugger />}
     </>
   );
 }

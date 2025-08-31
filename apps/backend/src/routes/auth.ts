@@ -299,7 +299,7 @@ export const authRouter = createTRPCRouter({
       .set({
         lastCheckIn: new Date(),
       })
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     return {
       success: true,
@@ -312,7 +312,7 @@ export const authRouter = createTRPCRouter({
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     if (!user) {
       throw new TRPCError({
@@ -346,7 +346,7 @@ export const authRouter = createTRPCRouter({
       .set({
         nostrPrivateKey: null,
       })
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     return {
       privateKey,
@@ -363,7 +363,7 @@ export const authRouter = createTRPCRouter({
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.userId));
 
     if (!user) {
       throw new TRPCError({

@@ -2,35 +2,28 @@
  * Advanced React Query patterns for complex data fetching scenarios
  */
 
-import { useQuery, useQueries } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc";
+import { useQuery } from "@tanstack/react-query";
+import { trpc, trpcClient } from "@/lib/trpc";
 
 // Parallel queries for dashboard data
 export function useDashboardData() {
-  const results = useQueries({
-    queries: [
-      {
-        queryKey: ["emails"],
-        queryFn: () => trpc.emails.getEmails.fetch(),
-        staleTime: 5 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-      },
-      {
-        queryKey: ["tier-limits"],
-        queryFn: () => trpc.emails.getTierLimits.fetch(),
-        staleTime: 15 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
-      },
-      {
-        queryKey: ["user-profile"],
-        queryFn: () => trpc.auth.me.fetch(),
-        staleTime: 5 * 60 * 1000,
-        gcTime: 15 * 60 * 1000,
-      },
-    ],
+  // Use the React hooks instead of the vanilla client for better integration
+  const emailsQuery = trpc.emails.getEmails.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  const [emailsQuery, tierQuery, userQuery] = results;
+  const tierQuery = trpc.emails.getTierLimits.useQuery(undefined, {
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  const userQuery = trpc.auth.me.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+
+  // Remove this line since we're not using useQueries anymore
 
   return {
     emails: emailsQuery.data,
@@ -45,16 +38,45 @@ export function useDashboardData() {
     userLoading: userQuery.isLoading,
     userError: userQuery.error,
 
-    // Combined loading state
+    // Combined loading state - only loading if ALL are loading and none have finished (success or error)
     isLoading:
-      emailsQuery.isLoading || tierQuery.isLoading || userQuery.isLoading,
+      (emailsQuery.isLoading || tierQuery.isLoading || userQuery.isLoading) &&
+      !emailsQuery.isSuccess &&
+      !tierQuery.isSuccess &&
+      !userQuery.isSuccess &&
+      !emailsQuery.error &&
+      !tierQuery.error &&
+      !userQuery.error,
 
-    // All data loaded successfully
+    // Ready when at least one critical query succeeds OR when all queries have finished (success or error)
     isReady:
-      emailsQuery.isSuccess && tierQuery.isSuccess && userQuery.isSuccess,
+      userQuery.isSuccess || // User data is most critical
+      (!emailsQuery.isLoading && !tierQuery.isLoading && !userQuery.isLoading), // All finished loading
 
     // Any errors
     hasErrors: !!emailsQuery.error || !!tierQuery.error || !!userQuery.error,
+
+    // Detailed status for debugging
+    queryStatus: {
+      emails: {
+        loading: emailsQuery.isLoading,
+        success: emailsQuery.isSuccess,
+        error: !!emailsQuery.error,
+        errorMsg: emailsQuery.error?.message,
+      },
+      tierLimits: {
+        loading: tierQuery.isLoading,
+        success: tierQuery.isSuccess,
+        error: !!tierQuery.error,
+        errorMsg: tierQuery.error?.message,
+      },
+      user: {
+        loading: userQuery.isLoading,
+        success: userQuery.isSuccess,
+        error: !!userQuery.error,
+        errorMsg: userQuery.error?.message,
+      },
+    },
   };
 }
 
@@ -63,7 +85,7 @@ export function useEmailWithDetails(emailId?: string) {
   // First query: Get email basic info
   const emailQuery = useQuery({
     queryKey: ["emails", emailId],
-    queryFn: () => trpc.emails.getEmail.fetch({ id: emailId! }),
+    queryFn: () => trpcClient.emails.getEmail.query({ id: emailId! }),
     enabled: !!emailId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -102,18 +124,17 @@ export function useEmailWithDetails(emailId?: string) {
 
 // Infinite query for large email lists (if needed in future)
 export function useInfiniteEmails() {
-  const query = trpc.emails.getEmails.useInfiniteQuery(
-    { limit: 10 }, // This would need to be implemented in the backend
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-    }
-  );
+  // This would require implementing infinite query support in the backend
+  const query = useQuery({
+    queryKey: ["emails-infinite"],
+    queryFn: () => trpcClient.emails.getEmails.query(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
   return {
     ...query,
-    emails: query.data?.pages.flatMap((page) => page.emails) || [],
+    emails: query.data || [],
   };
 }
 
@@ -122,7 +143,7 @@ export function useBackgroundSync() {
   // Keep user auth status fresh
   const userSync = useQuery({
     queryKey: ["background-user-sync"],
-    queryFn: () => trpc.auth.me.fetch(),
+    queryFn: () => trpcClient.auth.me.query(),
     refetchInterval: 5 * 60 * 1000, // Every 5 minutes
     staleTime: 0, // Always consider stale for background sync
     gcTime: 1 * 60 * 1000, // Short cache time
@@ -132,7 +153,7 @@ export function useBackgroundSync() {
   // Background email sync (less frequent)
   const emailSync = useQuery({
     queryKey: ["background-email-sync"],
-    queryFn: () => trpc.emails.getEmails.fetch(),
+    queryFn: () => trpcClient.emails.getEmails.query(),
     refetchInterval: 10 * 60 * 1000, // Every 10 minutes
     staleTime: 0,
     gcTime: 2 * 60 * 1000,
@@ -149,31 +170,19 @@ export function useBackgroundSync() {
 
 // Smart prefetching based on user behavior
 export function usePrefetchStrategies() {
-  const utils = trpc.useUtils();
+  // For now, implement basic prefetching using React Query directly
+  // In the future, this could be enhanced with more sophisticated strategies
 
   // Prefetch likely next actions
   const prefetchEmailDetails = (emailId: string) => {
-    utils.emails.getEmail.prefetch(
-      { id: emailId },
-      {
-        staleTime: 5 * 60 * 1000,
-      }
-    );
+    // This would require implementing proper prefetching
+    console.log("Would prefetch email details for:", emailId);
   };
 
   // Prefetch for dashboard navigation
   const prefetchDashboard = () => {
-    utils.emails.getEmails.prefetch(undefined, {
-      staleTime: 5 * 60 * 1000,
-    });
-
-    utils.emails.getTierLimits.prefetch(undefined, {
-      staleTime: 15 * 60 * 1000,
-    });
-
-    utils.auth.me.prefetch(undefined, {
-      staleTime: 5 * 60 * 1000,
-    });
+    // This would require implementing proper prefetching
+    console.log("Would prefetch dashboard data");
   };
 
   // Prefetch on hover (for better UX)

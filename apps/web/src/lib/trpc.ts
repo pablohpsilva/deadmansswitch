@@ -1,7 +1,7 @@
 import { createTRPCReact } from "@trpc/react-query";
-import { httpBatchLink } from "@trpc/client";
-// Note: This might need adjustment based on your actual backend structure
-import type { AppRouter } from "../../../backend/src/routes/router";
+import { createTRPCClient, httpLink } from "@trpc/client";
+// Import shared types from packages
+import type { AppRouter } from "../../../../packages/shared-types";
 
 export const trpc = createTRPCReact<AppRouter>();
 
@@ -12,19 +12,41 @@ export function getBaseUrl() {
   return `http://localhost:3000`;
 }
 
-export const trpcClient = trpc.createClient({
+export const trpcClient = createTRPCClient<AppRouter>({
   links: [
-    httpBatchLink({
+    httpLink({
       url: `${getBaseUrl()}/api/trpc`,
-      // Disable batching for now to fix request parsing issues
-      maxBatchSize: 1,
-      // Enhanced batch configuration for better performance
-      maxURLLength: 2083, // Standard URL length limit
       headers() {
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("auth_token")
             : null;
+
+        // Debug logging for client-side headers
+        if (typeof window !== "undefined") {
+          console.log("🔍 [CLIENT DEBUG] Getting headers for tRPC request");
+          console.log(
+            "🔍 [CLIENT DEBUG] Token from localStorage:",
+            token ? `${token.substring(0, 20)}...` : "null"
+          );
+          console.log(
+            "🔍 [CLIENT DEBUG] Token length:",
+            token ? token.length : 0
+          );
+          console.log(
+            "🔍 [CLIENT DEBUG] Token is JWT format:",
+            token ? token.split(".").length === 3 : false
+          );
+          console.log(
+            "🔍 [CLIENT DEBUG] Will send authorization header:",
+            !!token
+          );
+          console.log(
+            "🔍 [CLIENT DEBUG] Full authorization header:",
+            token ? `Bearer ${token.substring(0, 30)}...` : "null"
+          );
+        }
+
         return token ? { authorization: `Bearer ${token}` } : {};
       },
       // Add better error handling

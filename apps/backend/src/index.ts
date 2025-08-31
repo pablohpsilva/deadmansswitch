@@ -38,6 +38,10 @@ app.use(
 const port = Number(process.env.PORT) || 3001;
 
 console.log(`🚀 Server is running on port ${port}`);
+console.log(
+  `🔧 [STARTUP DEBUG] Context creation function loaded at:`,
+  createContext.toString().substring(0, 100)
+);
 
 // Start cron jobs
 startCronJobs();

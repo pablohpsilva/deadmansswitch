@@ -4,7 +4,7 @@
  */
 
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import type { AppRouter } from "../../../../../../backend/src/routes/router";
+import type { AppRouter } from "../../../../../../packages/shared-types";
 
 // Backend URL - adjust this to match your backend server
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
@@ -20,6 +20,18 @@ async function handler(req: Request) {
 
     // Forward headers from the original request
     const headers = new Headers(req.headers);
+
+    // Debug logging for auth headers
+    const authHeader = req.headers.get("authorization");
+    console.log(
+      "🔍 [PROXY DEBUG] Original request auth header:",
+      authHeader ? `${authHeader.substring(0, 30)}...` : "null"
+    );
+    console.log("🔍 [PROXY DEBUG] Forwarding to backend URL:", backendUrl);
+    console.log(
+      "🔍 [PROXY DEBUG] All headers being forwarded:",
+      Object.fromEntries(headers.entries())
+    );
 
     // Make request to backend
     const fetchOptions: RequestInit = {

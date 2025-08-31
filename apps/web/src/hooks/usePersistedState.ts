@@ -1,3 +1,4 @@
+"use client";
 /**
  * Persisted state using React Query for local storage synchronization
  * Provides offline-first patterns and sync capabilities
@@ -5,6 +6,11 @@
 
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+
+// Utility functions for SSR-safe browser API access
+const isClient = typeof window !== "undefined";
+const isLocalStorageAvailable = isClient && typeof localStorage !== "undefined";
+const isNavigatorAvailable = isClient && typeof navigator !== "undefined";
 
 interface PersistedData<T> {
   data: T;
@@ -31,8 +37,12 @@ export function usePersistedQuery<T>(
   } = options;
   const queryClient = useQueryClient();
 
-  // Get data from localStorage
+  // Get data from localStorage (SSR-safe)
   const getPersistedData = (): T => {
+    if (!isLocalStorageAvailable) {
+      return defaultValue;
+    }
+
     try {
       const stored = localStorage.getItem(`persisted-${key}`);
       if (stored) {
@@ -54,13 +64,19 @@ export function usePersistedQuery<T>(
       }
     } catch (error) {
       console.error(`Failed to parse persisted data for ${key}:`, error);
-      localStorage.removeItem(`persisted-${key}`);
+      if (isLocalStorageAvailable) {
+        localStorage.removeItem(`persisted-${key}`);
+      }
     }
     return defaultValue;
   };
 
-  // Save data to localStorage
+  // Save data to localStorage (SSR-safe)
   const setPersistedData = (data: T) => {
+    if (!isLocalStorageAvailable) {
+      return;
+    }
+
     try {
       const persistedData: PersistedData<T> = {
         data,
@@ -77,14 +93,18 @@ export function usePersistedQuery<T>(
   const query = useQuery({
     queryKey: [key],
     queryFn: fetcher,
-    initialData: getPersistedData,
+    initialData: getPersistedData(),
     staleTime: maxAge / 2, // Consider stale at half the max age
     gcTime: maxAge,
     refetchInterval: syncInterval,
-    onSuccess: (data) => {
-      setPersistedData(data);
-    },
   });
+
+  // Save data to localStorage whenever query data changes
+  useEffect(() => {
+    if (query.data !== undefined) {
+      setPersistedData(query.data);
+    }
+  }, [query.data]);
 
   // Mutation to update local data
   const updateMutation = useMutation({
@@ -215,9 +235,18 @@ export function useOfflineQueue() {
     retryCount: number;
   }
 
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(() => {
+    if (isNavigatorAvailable) {
+      return navigator.onLine;
+    }
+    return true; // Assume online by default on server
+  });
 
   useEffect(() => {
+    if (!isClient) {
+      return;
+    }
+
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 

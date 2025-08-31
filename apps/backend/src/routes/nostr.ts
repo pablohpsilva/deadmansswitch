@@ -12,7 +12,7 @@ export const nostrRouter = createTRPCRouter({
     const relays = await db
       .select()
       .from(nostrRelays)
-      .where(eq(nostrRelays.userId, ctx.user.id));
+      .where(eq(nostrRelays.userId, ctx.user.userId));
 
     return relays;
   }),
@@ -41,7 +41,7 @@ export const nostrRouter = createTRPCRouter({
         .select()
         .from(nostrRelays)
         .where(
-          and(eq(nostrRelays.userId, ctx.user.id), eq(nostrRelays.url, url))
+          and(eq(nostrRelays.userId, ctx.user.userId), eq(nostrRelays.url, url))
         );
 
       if (existingRelay.length > 0) {
@@ -64,7 +64,7 @@ export const nostrRouter = createTRPCRouter({
       const [newRelay] = await db
         .insert(nostrRelays)
         .values({
-          userId: ctx.user.id,
+          userId: ctx.user.userId,
           url,
           name,
           isActive: true,
@@ -91,7 +91,7 @@ export const nostrRouter = createTRPCRouter({
         .select()
         .from(nostrRelays)
         .where(
-          and(eq(nostrRelays.id, id), eq(nostrRelays.userId, ctx.user.id))
+          and(eq(nostrRelays.id, id), eq(nostrRelays.userId, ctx.user.userId))
         );
 
       if (!existingRelay) {
@@ -130,7 +130,7 @@ export const nostrRouter = createTRPCRouter({
         .select()
         .from(nostrRelays)
         .where(
-          and(eq(nostrRelays.id, id), eq(nostrRelays.userId, ctx.user.id))
+          and(eq(nostrRelays.id, id), eq(nostrRelays.userId, ctx.user.userId))
         );
 
       if (!existingRelay) {
