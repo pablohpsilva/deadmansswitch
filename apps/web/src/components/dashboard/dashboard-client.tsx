@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EmailList } from "./EmailList";
 import { EmailForm } from "./EmailForm";
-import { UserProfile } from "./UserProfile";
 import { TierLimits } from "./TierLimits";
 import { EmailDetailView } from "./EmailDetailView";
-import { WalletManager } from "./WalletManager";
+import { WalletManager } from "./WalletManagerClean";
 import { AuthDebugger } from "../debug/auth-debug";
 import { useDashboardData } from "@/hooks/useAdvancedQueries";
 import { useBackgroundSync } from "@/hooks/useAdvancedQueries";
 import { useUserPreferences } from "@/hooks/usePersistedState";
+import { Card, Button } from "@/components/ui/card";
+import { Navbar } from "@/components/ui/navbar";
 
 type ViewMode = "list" | "create" | "edit" | "view";
 
@@ -19,6 +20,8 @@ export function DashboardClient() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Enhanced dashboard data with React Query
   const {
@@ -41,12 +44,23 @@ export function DashboardClient() {
   // User preferences
   const { data: preferences, update: updatePreferences } = useUserPreferences();
 
-  // Check authentication
+  // Check authentication and handle payment success
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (!token) {
       router.push("/auth/login");
       return;
+    }
+
+    // Check for payment success in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("upgrade") === "success") {
+      setShowSuccessMessage(true);
+      // Clean up URL without triggering navigation
+      window.history.replaceState({}, "", "/dashboard");
+
+      // Hide success message after 5 seconds
+      setTimeout(() => setShowSuccessMessage(false), 5000);
     }
   }, [router]);
 
@@ -82,9 +96,18 @@ export function DashboardClient() {
     router.push("/");
   };
 
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  // Close mobile menu when view mode changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [viewMode]);
+
   if (dashboardLoading || !isReady) {
     return (
-      <div className="flex items-center justify-center min-h-96">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
@@ -93,25 +116,25 @@ export function DashboardClient() {
               <div className="flex items-center justify-between">
                 <span>User data:</span>
                 <span>
-                  {queryStatus.user.loading && "⏳ Loading..."}
-                  {queryStatus.user.success && "✅ Loaded"}
-                  {queryStatus.user.error && "❌ Failed"}
+                  {queryStatus.user.loading && "Loading..."}
+                  {queryStatus.user.success && "Loaded"}
+                  {queryStatus.user.error && "Failed"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Emails:</span>
                 <span>
-                  {queryStatus.emails.loading && "⏳ Loading..."}
-                  {queryStatus.emails.success && "✅ Loaded"}
-                  {queryStatus.emails.error && "❌ Failed"}
+                  {queryStatus.emails.loading && "Loading..."}
+                  {queryStatus.emails.success && "Loaded"}
+                  {queryStatus.emails.error && "Failed"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Tier limits:</span>
                 <span>
-                  {queryStatus.tierLimits.loading && "⏳ Loading..."}
-                  {queryStatus.tierLimits.success && "✅ Loaded"}
-                  {queryStatus.tierLimits.error && "❌ Failed"}
+                  {queryStatus.tierLimits.loading && "Loading..."}
+                  {queryStatus.tierLimits.success && "Loaded"}
+                  {queryStatus.tierLimits.error && "Failed"}
                 </span>
               </div>
             </div>
@@ -134,7 +157,7 @@ export function DashboardClient() {
                   )}
                 </div>
                 <div className="mt-3 text-xs text-red-600">
-                  💡 Try refreshing the page or check if the backend server is
+                  Try refreshing the page or check if the backend server is
                   running.
                 </div>
               </div>
@@ -147,7 +170,7 @@ export function DashboardClient() {
 
   if (!user || hasErrors) {
     return (
-      <div className="flex items-center justify-center min-h-96">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">
             {!user ? "Authentication required" : "Error loading dashboard data"}
@@ -157,12 +180,9 @@ export function DashboardClient() {
               {emailsError && <p>Email error: {emailsError.message}</p>}
             </div>
           )}
-          <button
-            onClick={() => router.push("/auth/login")}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
+          <Button onClick={() => router.push("/auth/login")} variant="primary">
             Go to Login
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -170,134 +190,147 @@ export function DashboardClient() {
 
   return (
     <>
-      {/* Enhanced Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">
-                Dead Man's Switch
-              </h1>
-              <span className="ml-4 px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full">
-                {user.tier}
-              </span>
-            </div>
+      {/* Navigation */}
+      <Navbar 
+        user={user} 
+        onLogout={handleLogout} 
+        onMobileMenuToggle={handleMobileMenuToggle}
+        isMobileMenuOpen={isMobileMenuOpen}
+      />
 
-            <div className="flex items-center space-x-4">
-              {/* Background sync indicator */}
-              {syncStatus.userSyncStatus === "success" && (
-                <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                  ✓ Synced
-                </div>
-              )}
-
-              <UserProfile user={user} />
-
-              {/* Layout toggle based on preferences */}
-              <button
-                onClick={() =>
-                  updatePreferences({
-                    ...preferences,
-                    dashboardLayout:
-                      preferences.dashboardLayout === "grid" ? "list" : "grid",
-                  })
-                }
-                className="text-gray-500 hover:text-gray-700 px-2 py-1 rounded text-xs"
-                title={`Switch to ${
-                  preferences.dashboardLayout === "grid" ? "list" : "grid"
-                } view`}
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-green-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
-                {preferences.dashboardLayout === "grid" ? "☰" : "⊞"}
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-100"
-              >
-                Logout
-              </button>
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-green-800">
+                Upgrade Successful!
+              </h3>
+              <p className="text-sm text-green-700 mt-1">
+                Your account has been upgraded. You now have access to all
+                premium features.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessMessage(false)}
+              className="ml-auto text-green-500 hover:text-green-700"
+            >
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
           </div>
         </div>
-      </header>
+      )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Actions
-              </h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`w-full text-left px-3 py-2 rounded-lg ${
-                    viewMode === "list"
-                      ? "bg-blue-100 text-blue-700"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  📧 My Emails
-                </button>
-                <button
-                  onClick={handleCreateEmail}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                  disabled={
-                    emails &&
-                    tierLimits &&
-                    emails.length >= tierLimits.maxEmails
-                  }
-                >
-                  ➕ Create Email
-                </button>
-              </div>
+      <main className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
+            {/* Sidebar - Hidden on mobile unless menu is open */}
+            <div className={`lg:col-span-1 ${
+              isMobileMenuOpen ? 'block' : 'hidden lg:block'
+            } ${isMobileMenuOpen ? 'mb-6' : ''}`}>
+              <Card className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Quick Actions
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                      viewMode === "list"
+                        ? "bg-blue-100 text-blue-700"
+                        : "hover:bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    My Emails
+                  </button>
+                  <button
+                    onClick={handleCreateEmail}
+                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+                    disabled={
+                      emails &&
+                      tierLimits &&
+                      emails.length >= tierLimits.maxEmails
+                    }
+                  >
+                    Create Email
+                  </button>
+                  <Button
+                    onClick={() => router.push("/dashboard/pricing")}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    Upgrade Plan
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Tier Limits */}
+              {tierLimits && (
+                <TierLimits
+                  tierLimits={tierLimits}
+                  currentEmails={emails?.length || 0}
+                  userTier={user.tier}
+                />
+              )}
+
+              {/* Wallet Manager */}
+              <WalletManager className="mt-6" />
             </div>
 
-            {/* Tier Limits */}
-            {tierLimits && (
-              <TierLimits
-                tierLimits={tierLimits}
-                currentEmails={emails?.length || 0}
-                userTier={user.tier}
-              />
-            )}
+            {/* Main Content Area */}
+            <div className="lg:col-span-3">
+              {/* Mobile: Show main content unless menu is open */}
+              <div className={isMobileMenuOpen ? 'hidden lg:block' : 'block'}>
+                {viewMode === "list" && (
+                  <EmailList
+                    emails={emails || []}
+                    isLoading={emailsLoading}
+                    onCreateEmail={handleCreateEmail}
+                    onEditEmail={handleEditEmail}
+                    onViewEmail={handleViewEmail}
+                    onRefresh={refetchEmails}
+                  />
+                )}
 
-            {/* Wallet Manager */}
-            <WalletManager className="mt-6" />
-          </div>
+                {(viewMode === "create" || viewMode === "edit") && (
+                  <EmailForm
+                    mode={viewMode}
+                    emailId={selectedEmailId}
+                    onSuccess={handleBackToList}
+                    onCancel={handleBackToList}
+                    tierLimits={tierLimits}
+                  />
+                )}
 
-          {/* Main Content Area */}
-          <div className="lg:col-span-3">
-            {viewMode === "list" && (
-              <EmailList
-                emails={emails || []}
-                isLoading={emailsLoading}
-                onCreateEmail={handleCreateEmail}
-                onEditEmail={handleEditEmail}
-                onViewEmail={handleViewEmail}
-                onRefresh={refetchEmails}
-              />
-            )}
-
-            {(viewMode === "create" || viewMode === "edit") && (
-              <EmailForm
-                mode={viewMode}
-                emailId={selectedEmailId}
-                onSuccess={handleBackToList}
-                onCancel={handleBackToList}
-                tierLimits={tierLimits}
-              />
-            )}
-
-            {viewMode === "view" && selectedEmailId && (
-              <EmailDetailView
-                emailId={selectedEmailId}
-                onEdit={() => handleEditEmail(selectedEmailId)}
-                onBack={handleBackToList}
-              />
-            )}
+                {viewMode === "view" && selectedEmailId && (
+                  <EmailDetailView
+                    emailId={selectedEmailId}
+                    onEdit={() => handleEditEmail(selectedEmailId)}
+                    onBack={handleBackToList}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </main>
