@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { clientEncryption } from "@/lib/client-encryption";
+import { useGlobalData } from "@/hooks/useGlobalData";
 
 interface EmailFormData {
   title: string;
@@ -47,7 +49,12 @@ export function EmailForm({
 
   const [scheduleType, setScheduleType] = useState<"date" | "interval">("date");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEncrypting, setIsEncrypting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [encryptionStatus, setEncryptionStatus] = useState<string>("");
+
+  // Get user data for encryption
+  const { user } = useGlobalData();
 
   // Fetch email data for editing
   const { data: existingEmail, isLoading } = (
@@ -165,16 +172,44 @@ export function EmailForm({
       return;
     }
 
+    if (!user?.nostrPublicKey) {
+      setErrors({ submit: "User authentication required for encryption" });
+      return;
+    }
+
     setIsSubmitting(true);
+    setIsEncrypting(true);
+    setEncryptionStatus("Encrypting email content...");
 
     try {
       const validRecipients = formData.recipients.filter((r) => r.email.trim());
 
-      const submitData = {
-        title: formData.title,
+      // Encrypt email data on client-side before sending
+      const emailData = {
         subject: formData.subject,
         content: formData.content,
         recipients: validRecipients,
+      };
+
+      setEncryptionStatus("Encrypting with client-side keys...");
+      const encryptedData = await clientEncryption.encryptEmailData(
+        emailData,
+        user.nostrPublicKey
+      );
+
+      setEncryptionStatus("Sending encrypted data to server...");
+      setIsEncrypting(false);
+
+      const submitData = {
+        title: formData.title,
+        // Send encrypted data instead of plaintext
+        encryptedSubject: encryptedData.encryptedSubject,
+        encryptedContent: encryptedData.encryptedContent,
+        encryptedRecipients: encryptedData.encryptedRecipients,
+        encryptionMethod: encryptedData.encryptionMethod,
+        publicKey: encryptedData.publicKey,
+        recipientCount: validRecipients.length,
+        // Non-sensitive scheduling data can remain unencrypted
         scheduledFor:
           scheduleType === "date" ? formData.scheduledFor : undefined,
         intervalDays:
@@ -190,10 +225,20 @@ export function EmailForm({
           isActive: formData.isActive,
         });
       }
+
+      setEncryptionStatus("Email encrypted and saved successfully!");
     } catch (error) {
-      // Error handled by mutation onError
+      setIsEncrypting(false);
+      setEncryptionStatus("");
+      console.error("Encryption or submission failed:", error);
+      setErrors({
+        submit: `Failed to encrypt or save email: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      });
     } finally {
       setIsSubmitting(false);
+      setTimeout(() => setEncryptionStatus(""), 3000);
     }
   };
 
@@ -517,6 +562,23 @@ export function EmailForm({
             </div>
           )}
 
+          {/* Encryption Status */}
+          {(encryptionStatus || errors.submit) && (
+            <div className="mt-4">
+              {encryptionStatus && (
+                <div className="flex items-center space-x-2 text-blue-600 text-sm">
+                  {isEncrypting && (
+                    <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                  )}
+                  <span>{encryptionStatus}</span>
+                </div>
+              )}
+              {errors.submit && (
+                <div className="text-red-600 text-sm mt-2">{errors.submit}</div>
+              )}
+            </div>
+          )}
+
           {/* Submit Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
@@ -533,10 +595,12 @@ export function EmailForm({
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting
-                ? "Saving..."
+                ? isEncrypting
+                  ? "Encrypting..."
+                  : "Saving..."
                 : mode === "create"
-                ? "Create Email"
-                : "Update Email"}
+                ? "Create Encrypted Email"
+                : "Update Encrypted Email"}
             </button>
           </div>
         </form>

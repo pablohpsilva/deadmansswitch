@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   Star,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import {
   PaymentMethod,
@@ -88,7 +87,6 @@ export function PurchaseView({
   const [selectedToken, setSelectedToken] = useState<StablecoinToken>("USDT");
   const [selectedNetwork, setSelectedNetwork] =
     useState<StablecoinNetwork>("Ethereum");
-  const [showComparison, setShowComparison] = useState(false);
 
   const getMethodDisplayName = (method: PaymentMethod) => {
     switch (method) {
@@ -184,27 +182,26 @@ export function PurchaseView({
                     <span className="text-gray-700">{feature}</span>
                   </li>
                 ))}
-                {pricingData.features.length > 6 && (
-                  <li className="text-sm text-gray-500 ml-6">
-                    +{pricingData.features.length - 6} more features
-                  </li>
-                )}
               </ul>
             </div>
 
-            {/* Plan Comparison Toggle */}
+            {/* Plan Comparison Button - Scroll to Feature Comparison */}
             <button
-              onClick={() => setShowComparison(!showComparison)}
+              onClick={() => {
+                const element = document.getElementById("feature-comparison");
+                if (element) {
+                  element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
               className="w-full flex items-center justify-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <span className="text-sm font-medium text-gray-700 mr-2">
                 Compare with other plans
               </span>
-              {showComparison ? (
-                <ChevronUp className="h-4 w-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              )}
+              <ChevronDown className="h-4 w-4 text-gray-500" />
             </button>
           </div>
         </div>
@@ -416,7 +413,7 @@ export function PurchaseView({
       </div>
 
       {/* Plan Comparison Modal/Section */}
-      {showComparison && (
+      {false && (
         <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">
             Plan Comparison

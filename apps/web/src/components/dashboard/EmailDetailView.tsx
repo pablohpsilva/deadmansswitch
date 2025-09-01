@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { clientEncryption, type EmailData } from "@/lib/client-encryption";
 
 interface EmailDetailViewProps {
   emailId: string;
@@ -18,6 +20,76 @@ export function EmailDetailView({
     isLoading,
     error,
   } = (trpc as any).emails.getEmail.useQuery({ id: emailId });
+
+  const [decryptedData, setDecryptedData] = useState<EmailData | null>(null);
+  const [isDecrypting, setIsDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState<string | null>(null);
+
+  // Decrypt email content when email data is loaded
+  useEffect(() => {
+    const decryptEmailContent = async () => {
+      if (!email?.encryptedContent) {
+        // Legacy email or no encrypted content
+        if (email?.subject || email?.content) {
+          setDecryptedData({
+            subject: email.subject || "No Subject",
+            content: email.content || "No Content",
+            recipients: email.recipients || [],
+          });
+        }
+        return;
+      }
+
+      setIsDecrypting(true);
+      setDecryptionError(null);
+
+      try {
+        // Parse the encrypted content from Nostr
+        const encryptedPayload = JSON.parse(email.encryptedContent);
+
+        if (encryptedPayload.type === "deadman_email_encrypted") {
+          // Extract encryption metadata from tags
+          const tags = email.encryptionMetadata?.tags || [];
+          const encryptionMethodTag = tags.find(
+            (tag: string[]) => tag[0] === "encryption_method"
+          );
+          const publicKeyTag = tags.find(
+            (tag: string[]) => tag[0] === "encrypted_by_pubkey"
+          );
+
+          const encryptedEmailData = {
+            encryptedSubject: encryptedPayload.encryptedSubject,
+            encryptedContent: encryptedPayload.encryptedContent,
+            encryptedRecipients: encryptedPayload.encryptedRecipients,
+            encryptionMethod: (encryptionMethodTag?.[1] as any) || "fallback",
+            publicKey: publicKeyTag?.[1] || "",
+          };
+
+          const decrypted = await clientEncryption.decryptEmailData(
+            encryptedEmailData
+          );
+          if (decrypted) {
+            setDecryptedData(decrypted);
+          } else {
+            throw new Error("Failed to decrypt email content");
+          }
+        } else {
+          throw new Error("Unknown encrypted email format");
+        }
+      } catch (error) {
+        console.error("Failed to decrypt email:", error);
+        setDecryptionError(
+          error instanceof Error ? error.message : "Failed to decrypt email"
+        );
+      } finally {
+        setIsDecrypting(false);
+      }
+    };
+
+    if (email) {
+      decryptEmailContent();
+    }
+  }, [email]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -84,6 +156,40 @@ export function EmailDetailView({
     );
   }
 
+  if (isDecrypting) {
+    return (
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 text-center">
+          <div className="text-4xl mb-4">🔓</div>
+          <p className="text-gray-600">Decrypting email content...</p>
+          <div className="mt-4">
+            <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (decryptionError) {
+    return (
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 text-center">
+          <div className="text-red-500 text-6xl mb-4">🔒❌</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Decryption Failed
+          </h3>
+          <p className="text-red-600 mb-4">{decryptionError}</p>
+          <button
+            onClick={onBack}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            ← Back to List
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !email) {
     return (
       <div className="bg-white rounded-lg shadow">
@@ -125,8 +231,8 @@ export function EmailDetailView({
                 {status.icon} {status.text}
               </span>
               <span>
-                📧 {email.recipients.length} recipient
-                {email.recipients.length !== 1 ? "s" : ""}
+                📧 {decryptedData?.recipients?.length || 0} recipient
+                {(decryptedData?.recipients?.length || 0) !== 1 ? "s" : ""}
               </span>
             </div>
           </div>
@@ -172,7 +278,7 @@ export function EmailDetailView({
                 <div className="bg-gray-50 px-4 py-2 border-b">
                   <div className="text-sm">
                     <span className="font-medium">Subject: </span>
-                    <span>{email.subject}</span>
+                    <span>{decryptedData?.subject || "No Subject"}</span>
                   </div>
                 </div>
 
@@ -182,7 +288,7 @@ export function EmailDetailView({
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                       <h4 className="font-semibold text-yellow-800 mb-2">
                         📨 Message from{" "}
-                        {email.recipients[0]?.name || "A friend"}
+                        {decryptedData?.recipients?.[0]?.name || "A friend"}
                       </h4>
                       <p className="text-yellow-700 text-sm">
                         This message was automatically sent by Dead Man's Switch
@@ -191,9 +297,11 @@ export function EmailDetailView({
                     </div>
 
                     <div className="bg-white border rounded-lg p-4">
-                      <h5 className="font-semibold mb-3">{email.subject}</h5>
+                      <h5 className="font-semibold mb-3">
+                        {decryptedData?.subject || "No Subject"}
+                      </h5>
                       <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                        {email.content}
+                        {decryptedData?.content || "No content available"}
                       </div>
                     </div>
 
@@ -243,18 +351,20 @@ export function EmailDetailView({
                 👥 Recipients
               </h3>
               <div className="space-y-2">
-                {email.recipients.map((recipient: any, index: number) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm">
-                      <p className="font-medium text-gray-900">
-                        {recipient.email}
-                      </p>
-                      {recipient.name && (
-                        <p className="text-gray-600">{recipient.name}</p>
-                      )}
+                {(decryptedData?.recipients || []).map(
+                  (recipient: any, index: number) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm">
+                        <p className="font-medium text-gray-900">
+                          {recipient.email}
+                        </p>
+                        {recipient.name && (
+                          <p className="text-gray-600">{recipient.name}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
 
