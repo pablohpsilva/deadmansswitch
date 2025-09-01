@@ -399,10 +399,7 @@ export const emailsRouter = createTRPCRouter({
             const updatedData = {
               subject: subject || currentData?.subject || "",
               content: content || currentData?.content || "",
-              recipients:
-                recipients?.map((r) => r.email) ||
-                currentData?.recipients ||
-                [],
+              recipients: recipients?.map((r) => r.email) || [] || [],
             };
 
             // Store updated data in Nostr

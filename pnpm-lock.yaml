@@ -20,6 +20,9 @@ importers:
       '@deadmansswitch/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@deadmansswitch/endpoints':
+        specifier: workspace:*
+        version: link:../../packages/endpoints
       '@deadmansswitch/pricing':
         specifier: workspace:*
         version: link:../../packages/pricing
@@ -282,6 +285,61 @@ importers:
       typescript:
         specifier: ^5.4.2
         version: 5.9.2
+
+  packages/endpoints:
+    dependencies:
+      '@deadmansswitch/database':
+        specifier: workspace:*
+        version: link:../database
+      '@deadmansswitch/pricing':
+        specifier: workspace:*
+        version: link:../pricing
+      '@noble/hashes':
+        specifier: ^1.5.0
+        version: 1.8.0
+      '@trpc/server':
+        specifier: ^10.45.2
+        version: 10.45.2
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
+      drizzle-orm:
+        specifier: ^0.33.0
+        version: 0.33.0(postgres@3.4.7)
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
+      nodemailer:
+        specifier: ^6.9.16
+        version: 6.10.1
+      nostr-tools:
+        specifier: ^2.10.2
+        version: 2.16.2(typescript@5.9.2)
+      stripe:
+        specifier: ^16.12.0
+        version: 16.12.0
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
+      '@types/jsonwebtoken':
+        specifier: ^9.0.7
+        version: 9.0.10
+      '@types/node':
+        specifier: ^20.19.11
+        version: 20.19.11
+      '@types/nodemailer':
+        specifier: ^6.4.19
+        version: 6.4.19
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.2
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@20.19.11)
 
   packages/pricing:
     dependencies:
@@ -3211,6 +3269,10 @@ packages:
       typescript: 5.9.2
     dev: false
 
+  /@trpc/server@10.45.2:
+    resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
+    dev: false
+
   /@trpc/server@11.5.0(typescript@5.9.2):
     resolution: {integrity: sha512-0IBtkmUCeO2ycn4K45/cqsujnlCQrSvkCo7lFDpg3kGMIPiLyLRciID5IiS7prEjRjeITa+od2aaHTIwONApVw==}
     peerDependencies:
@@ -3256,6 +3318,10 @@ packages:
     resolution: {integrity: sha512-6atioO8Y75fNcbmj0G7UjI9lXN2pQ/IGJ2FWT4a/btd0Lk9lQalHLKhkgKVZ3r+spnmWUKfbMi1GEe9wyHQfNQ==}
     dependencies:
       '@types/node': 20.19.11
+    dev: true
+
+  /@types/bcryptjs@2.4.6:
+    resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
     dev: true
 
   /@types/crypto-js@4.2.2:
@@ -3551,6 +3617,10 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+    dev: false
+
+  /bcryptjs@2.4.3:
+    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
     dev: false
 
   /bidi-js@1.0.3:
@@ -5751,6 +5821,14 @@ packages:
 
   /stripe@14.25.0:
     resolution: {integrity: sha512-wQS3GNMofCXwH8TSje8E1SE8zr6ODiGtHQgPtO95p9Mb4FhKC9jvXR2NUTpZ9ZINlckJcFidCmaTFV4P6vsb9g==}
+    engines: {node: '>=12.*'}
+    dependencies:
+      '@types/node': 20.19.11
+      qs: 6.14.0
+    dev: false
+
+  /stripe@16.12.0:
+    resolution: {integrity: sha512-H7eFVLDxeTNNSn4JTRfL2//LzCbDrMSZ+2q1c7CanVWgK2qIW5TwS+0V7N9KcKZZNpYh/uCqK0PyZh/2UsaAtQ==}
     engines: {node: '>=12.*'}
     dependencies:
       '@types/node': 20.19.11
