@@ -2,8 +2,14 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/lib/trpc";
 import { db } from "@/db/connection";
-import { users, auditLogs } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import {
+  users,
+  auditLogs,
+  pricingTiers,
+  paymentMethods,
+  pricingConfigurations,
+} from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import Stripe from "stripe";
 import crypto from "crypto";
 
@@ -11,81 +17,227 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
 });
 
-// Pricing configuration
-const PRICING = {
-  premium: {
-    yearly: {
-      priceId:
-        process.env.STRIPE_PREMIUM_YEARLY_PRICE_ID || "price_premium_yearly",
-      amount: 1500, // $15.00 in cents
-      currency: "usd",
-      interval: "year",
-      lightning: 30000, // ~30,000 sats ($15 at $50k BTC)
-    },
-  },
-  lifetime: {
-    onetime: {
-      priceId: process.env.STRIPE_LIFETIME_PRICE_ID || "price_lifetime",
-      amount: 6000, // $60.00 in cents
-      currency: "usd",
-      lightning: 120000, // ~120,000 sats ($60 at $50k BTC)
-    },
-  },
-};
+// Payment method types
+export type PaymentMethod = "lightning" | "stablecoin" | "stripe";
+
+// Helper function to generate dynamic features based on tier limits
+function generateTierFeatures(tier: any): string[] {
+  const features = [];
+
+  if (tier.name === "free") {
+    features.push(
+      `Up to ${tier.maxEmails} emails`,
+      `${tier.maxRecipients} recipients per email`,
+      `${tier.maxSubjectLength} character subject line`,
+      `${tier.maxContentLength.toLocaleString()} character content`,
+      "Basic scheduling",
+      "Nostr encryption",
+      "Single relay storage (basic)"
+    );
+  } else if (tier.name === "premium") {
+    features.push(
+      `Up to ${tier.maxEmails} emails`,
+      `${tier.maxRecipients} recipients per email`,
+      `${tier.maxSubjectLength} character subject line`,
+      `${tier.maxContentLength.toLocaleString()} character content`,
+      "Advanced scheduling",
+      "Nostr encryption",
+      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
+      "Enhanced decentralization",
+      "10% off with Bitcoin Lightning",
+      "7% off with stablecoins",
+      "Priority support"
+    );
+  } else if (tier.name === "lifetime") {
+    features.push(
+      `Up to ${tier.maxEmails} emails`,
+      `${tier.maxRecipients} recipients per email`,
+      "One-time payment",
+      "Lifetime updates",
+      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
+      "Optimized decentralization",
+      "10% off with Bitcoin Lightning",
+      "7% off with stablecoins",
+      "Priority support"
+    );
+  }
+
+  return features;
+}
+
+// Helper function to get pricing from database
+async function getPricingFromDatabase() {
+  const tiers = await db
+    .select()
+    .from(pricingTiers)
+    .where(eq(pricingTiers.isActive, true));
+
+  const methods = await db
+    .select()
+    .from(paymentMethods)
+    .where(eq(paymentMethods.isActive, true));
+
+  const configurations = await db
+    .select({
+      id: pricingConfigurations.id,
+      tierId: pricingConfigurations.tierId,
+      paymentMethodId: pricingConfigurations.paymentMethodId,
+      basePrice: pricingConfigurations.basePrice,
+      discountPercent: pricingConfigurations.discountPercent,
+      finalPrice: pricingConfigurations.finalPrice,
+      currency: pricingConfigurations.currency,
+      interval: pricingConfigurations.interval,
+      stripeProductId: pricingConfigurations.stripeProductId,
+      stripePriceId: pricingConfigurations.stripePriceId,
+      cryptoAmount: pricingConfigurations.cryptoAmount,
+      cryptoUnit: pricingConfigurations.cryptoUnit,
+      isActive: pricingConfigurations.isActive,
+      // Join tier and payment method info
+      tierName: pricingTiers.name,
+      paymentMethodName: paymentMethods.name,
+      paymentMethodDisplayName: paymentMethods.displayName,
+      requiresKyc: paymentMethods.requiresKyc,
+      includesTax: paymentMethods.includesTax,
+      configuration: paymentMethods.configuration,
+    })
+    .from(pricingConfigurations)
+    .innerJoin(pricingTiers, eq(pricingConfigurations.tierId, pricingTiers.id))
+    .innerJoin(
+      paymentMethods,
+      eq(pricingConfigurations.paymentMethodId, paymentMethods.id)
+    )
+    .where(eq(pricingConfigurations.isActive, true));
+
+  return { tiers, methods, configurations };
+}
+
+// Helper function to find pricing configuration
+async function getPricingConfig(tierName: string, paymentMethodName: string) {
+  const config = await db
+    .select({
+      id: pricingConfigurations.id,
+      basePrice: pricingConfigurations.basePrice,
+      discountPercent: pricingConfigurations.discountPercent,
+      finalPrice: pricingConfigurations.finalPrice,
+      currency: pricingConfigurations.currency,
+      interval: pricingConfigurations.interval,
+      stripeProductId: pricingConfigurations.stripeProductId,
+      stripePriceId: pricingConfigurations.stripePriceId,
+      cryptoAmount: pricingConfigurations.cryptoAmount,
+      cryptoUnit: pricingConfigurations.cryptoUnit,
+      requiresKyc: paymentMethods.requiresKyc,
+      includesTax: paymentMethods.includesTax,
+      configuration: paymentMethods.configuration,
+    })
+    .from(pricingConfigurations)
+    .innerJoin(pricingTiers, eq(pricingConfigurations.tierId, pricingTiers.id))
+    .innerJoin(
+      paymentMethods,
+      eq(pricingConfigurations.paymentMethodId, paymentMethods.id)
+    )
+    .where(
+      and(
+        eq(pricingTiers.name, tierName),
+        eq(paymentMethods.name, paymentMethodName),
+        eq(pricingConfigurations.isActive, true)
+      )
+    )
+    .limit(1);
+
+  return config[0] || null;
+}
 
 export const paymentsRouter = createTRPCRouter({
   // Get pricing information
-  getPricing: protectedProcedure.query(() => {
-    return {
-      free: {
-        name: "Free",
-        price: 0,
-        features: [
-          "Up to 2 emails",
-          "2 recipients per email",
-          "125 character subject line",
-          "2000 character content",
-          "Basic scheduling",
-          "Nostr encryption",
-          "Single relay storage (basic)",
-        ],
-      },
-      premium: {
-        name: "Premium",
-        price: PRICING.premium.yearly.amount / 100,
-        interval: "year",
-        lightning: PRICING.premium.yearly.lightning,
-        features: [
-          "Up to 100 emails",
-          "10 recipients per email",
-          "300 character subject line",
-          "10,000 character content",
-          "Advanced scheduling",
-          "Nostr encryption",
-          "Multi-relay storage (5 relays)",
-          "Enhanced decentralization",
-          "Priority support",
-        ],
-      },
-      lifetime: {
-        name: "Lifetime",
-        price: PRICING.lifetime.onetime.amount / 100,
-        interval: "one-time",
-        lightning: PRICING.lifetime.onetime.lightning,
-        features: [
-          "Up to 100 emails",
-          "10 recipients per email",
-          "300 character subject line",
-          "10,000 character content",
-          "Advanced scheduling",
-          "Nostr encryption",
-          "Maximum relay storage (10 relays)",
-          "Maximum decentralization",
-          "Lifetime updates",
-          "Priority support",
-        ],
-      },
-    };
+  getPricing: protectedProcedure.query(async () => {
+    try {
+      const { tiers, methods, configurations } = await getPricingFromDatabase();
+
+      // Build the response structure
+      const result: any = {};
+
+      for (const tier of tiers) {
+        // Generate dynamic features based on actual database values
+        const features = generateTierFeatures(tier);
+
+        result[tier.name] = {
+          name: tier.displayName,
+          interval:
+            tier.name === "free"
+              ? "forever"
+              : configurations.find((c) => c.tierName === tier.name)
+                  ?.interval || "year",
+          features: features,
+          maxEmails: tier.maxEmails,
+          maxRecipients: tier.maxRecipients,
+          maxSubjectLength: tier.maxSubjectLength,
+          maxContentLength: tier.maxContentLength,
+          maxRelays: tier.maxRelays,
+        };
+
+        if (tier.name === "free") {
+          result[tier.name].price = 0;
+        } else {
+          // Add payment methods for paid tiers
+          result[tier.name].paymentMethods = {};
+
+          const tierConfigs = configurations.filter(
+            (c) => c.tierName === tier.name
+          );
+
+          for (const config of tierConfigs) {
+            const paymentMethodInfo = methods.find(
+              (m) => m.id === config.paymentMethodId
+            );
+
+            if (paymentMethodInfo) {
+              const methodData: any = {
+                price: parseFloat(config.finalPrice),
+                currency: config.currency.toLowerCase(),
+                discount: config.discountPercent,
+                taxIncluded: paymentMethodInfo.includesTax,
+                kycRequired: paymentMethodInfo.requiresKyc,
+              };
+
+              // Add method-specific data
+              if (config.stripePriceId) {
+                methodData.priceId = config.stripePriceId;
+              }
+
+              if (config.cryptoAmount && config.cryptoUnit) {
+                if (config.cryptoUnit === "sats") {
+                  methodData.satsAmount = parseInt(config.cryptoAmount);
+                }
+              }
+
+              if (
+                paymentMethodInfo.name === "stablecoin" &&
+                paymentMethodInfo.configuration
+              ) {
+                const stablecoinConfig = paymentMethodInfo.configuration as any;
+                methodData.acceptedTokens =
+                  stablecoinConfig.supportedTokens || ["USDT", "USDC"];
+                methodData.networks = stablecoinConfig.supportedNetworks || [
+                  "Ethereum",
+                  "TRON",
+                ];
+              }
+
+              result[tier.name].paymentMethods[paymentMethodInfo.name] =
+                methodData;
+            }
+          }
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error fetching pricing:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch pricing information",
+      });
+    }
   }),
 
   // Get current subscription status
@@ -178,7 +330,10 @@ export const paymentsRouter = createTRPCRouter({
           payment_method_types: ["card"],
           line_items: [
             {
-              price: PRICING.premium.yearly.priceId,
+              price:
+                (await getPricingConfig("premium", "stripe"))?.stripePriceId ||
+                process.env.STRIPE_PREMIUM_YEARLY_PRICE_ID ||
+                "price_premium_yearly",
               quantity: 1,
             },
           ],
@@ -251,7 +406,10 @@ export const paymentsRouter = createTRPCRouter({
           payment_method_types: ["card"],
           line_items: [
             {
-              price: PRICING.lifetime.onetime.priceId,
+              price:
+                (await getPricingConfig("lifetime", "stripe"))?.stripePriceId ||
+                process.env.STRIPE_LIFETIME_PRICE_ID ||
+                "price_lifetime",
               quantity: 1,
             },
           ],
@@ -575,9 +733,7 @@ export const paymentsRouter = createTRPCRouter({
           preimage,
           upgradedAt: new Date(),
           amount:
-            tier === "premium"
-              ? PRICING.premium.yearly.lightning
-              : PRICING.lifetime.onetime.lightning,
+            (await getPricingConfig(tier, "lightning"))?.cryptoAmount || "0",
         }),
       });
 
@@ -624,6 +780,244 @@ export const paymentsRouter = createTRPCRouter({
         status: paymentLog ? "paid" : "pending",
         createdAt: invoiceLog.createdAt,
         paidAt: paymentLog?.createdAt || null,
+      };
+    }),
+
+  // Create Lightning checkout for specific payment method
+  createLightningCheckout: protectedProcedure
+    .input(
+      z.object({
+        tier: z.enum(["premium", "lifetime"]),
+        paymentMethod: z.literal("lightning"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { tier, paymentMethod } = input;
+
+      const pricingConfig = await getPricingConfig(tier, "lightning");
+
+      if (!pricingConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Lightning pricing not found for ${tier} tier`,
+        });
+      }
+
+      // Generate a unique payment hash for this invoice
+      const paymentHash = crypto.randomBytes(32).toString("hex");
+
+      // Create mock Lightning invoice (in real implementation, use a Lightning service)
+      const satsAmount = parseInt(pricingConfig.cryptoAmount || "0");
+      const invoice = {
+        paymentHash,
+        amount: satsAmount,
+        amountUSD: parseFloat(pricingConfig.finalPrice),
+        tier,
+        bolt11: `lnbc${satsAmount}1...`, // Mock BOLT11 invoice
+        expiresAt: new Date(Date.now() + 3600000), // 1 hour expiry
+      };
+
+      // Log invoice creation
+      await db.insert(auditLogs).values({
+        userId: ctx.user.userId,
+        action: "lightning_invoice_created",
+        details: JSON.stringify({
+          tier,
+          paymentHash,
+          amount: satsAmount,
+          amountUSD: parseFloat(pricingConfig.finalPrice),
+          discount: pricingConfig.discountPercent,
+        }),
+      });
+
+      return invoice;
+    }),
+
+  // Create stablecoin checkout session
+  createStablecoinCheckout: protectedProcedure
+    .input(
+      z.object({
+        tier: z.enum(["premium", "lifetime"]),
+        paymentMethod: z.literal("stablecoin"),
+        token: z.enum(["USDT", "USDC"]),
+        network: z.enum(["Ethereum", "TRON"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { tier, paymentMethod, token, network } = input;
+
+      const pricingConfig = await getPricingConfig(tier, "stablecoin");
+
+      if (!pricingConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Stablecoin pricing not found for ${tier} tier`,
+        });
+      }
+
+      // Generate a unique payment reference
+      const paymentRef = crypto.randomBytes(16).toString("hex");
+
+      // Mock wallet addresses (in real implementation, generate or fetch from service)
+      const walletAddresses = {
+        Ethereum: {
+          USDT: "0x1234...abcd", // Mock Ethereum USDT address
+          USDC: "0x5678...efgh", // Mock Ethereum USDC address
+        },
+        TRON: {
+          USDT: "TR12...xyz9", // Mock TRON USDT address
+          USDC: "TR34...abc1", // Mock TRON USDC address
+        },
+      };
+
+      const paymentDetails = {
+        paymentRef,
+        amount: parseFloat(pricingConfig.finalPrice),
+        token,
+        network,
+        walletAddress: walletAddresses[network][token],
+        tier,
+        discount: pricingConfig.discountPercent,
+        expiresAt: new Date(Date.now() + 3600000), // 1 hour expiry
+      };
+
+      // Log stablecoin payment request
+      await db.insert(auditLogs).values({
+        userId: ctx.user.userId,
+        action: "stablecoin_payment_created",
+        details: JSON.stringify({
+          tier,
+          paymentRef,
+          amount: parseFloat(pricingConfig.finalPrice),
+          token,
+          network,
+          discount: pricingConfig.discountPercent,
+          walletAddress: walletAddresses[network][token],
+        }),
+      });
+
+      return paymentDetails;
+    }),
+
+  // Verify stablecoin payment
+  verifyStablecoinPayment: protectedProcedure
+    .input(
+      z.object({
+        paymentRef: z.string(),
+        txHash: z.string(),
+        tier: z.enum(["premium", "lifetime"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { paymentRef, txHash, tier } = input;
+
+      // In real implementation, verify the transaction on the blockchain
+      // For now, we'll just simulate verification
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, ctx.user.userId));
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // Check if payment was already processed
+      const existingPayment = await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.userId, user.id));
+
+      const alreadyProcessed = existingPayment.some(
+        (log) =>
+          log.details?.includes(paymentRef) &&
+          log.action === "stablecoin_payment_verified"
+      );
+
+      if (alreadyProcessed) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Payment already processed",
+        });
+      }
+
+      // Upgrade the user account
+      const updates: Partial<typeof users.$inferInsert> = {
+        tier,
+        updatedAt: new Date(),
+      };
+
+      if (tier === "premium") {
+        updates.subscriptionEnds = new Date(
+          Date.now() + 365 * 24 * 60 * 60 * 1000
+        ); // 1 year
+        updates.subscriptionStatus = "active";
+      }
+
+      await db.update(users).set(updates).where(eq(users.id, user.id));
+
+      // Log the successful payment
+      await db.insert(auditLogs).values({
+        userId: user.id,
+        action: "stablecoin_payment_verified",
+        details: JSON.stringify({
+          tier,
+          paymentRef,
+          txHash,
+          upgradedAt: new Date(),
+          amount: parseFloat(
+            (await getPricingConfig(tier, "stablecoin"))?.finalPrice || "0"
+          ),
+        }),
+      });
+
+      return {
+        success: true,
+        message: `Account upgraded to ${tier}`,
+        tier,
+        subscriptionEnds: updates.subscriptionEnds,
+      };
+    }),
+
+  // Get stablecoin payment status
+  getStablecoinPaymentStatus: protectedProcedure
+    .input(z.object({ paymentRef: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { paymentRef } = input;
+
+      const logs = await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.userId, ctx.user.userId));
+
+      const paymentLog = logs.find(
+        (log) =>
+          log.details?.includes(paymentRef) &&
+          log.action === "stablecoin_payment_created"
+      );
+
+      const verificationLog = logs.find(
+        (log) =>
+          log.details?.includes(paymentRef) &&
+          log.action === "stablecoin_payment_verified"
+      );
+
+      if (!paymentLog) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Payment request not found",
+        });
+      }
+
+      return {
+        paymentRef,
+        status: verificationLog ? "verified" : "pending",
+        createdAt: paymentLog.createdAt,
+        verifiedAt: verificationLog?.createdAt || null,
       };
     }),
 });

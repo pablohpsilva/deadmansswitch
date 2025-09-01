@@ -5,15 +5,50 @@ import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useGlobalData, useAuthStatus } from "@/hooks/useGlobalData";
 import { Section, SectionHeader } from "@/components/ui/card";
-import { PricingCard, FeatureComparison, FAQ } from "@/components/ui/pricing";
+import { FeatureComparison, FAQ } from "@/components/ui/pricing";
+import { ResponsivePricing } from "@/components/ui/responsive-pricing";
+import {
+  PaymentMethod,
+  StablecoinToken,
+  StablecoinNetwork,
+  Tier,
+} from "@/components/ui/pricing-wizard";
 import { Navbar } from "@/components/ui/navbar";
 
 interface PricingTier {
   name: string;
-  price: number;
   interval?: string;
-  lightning?: number;
   features: string[];
+  maxEmails: number;
+  maxRecipients: number;
+  maxSubjectLength: number;
+  maxContentLength: number;
+  maxRelays: number;
+  paymentMethods?: {
+    stripe: {
+      price: number;
+      discount: number;
+      taxIncluded: boolean;
+      kycRequired: boolean;
+      priceId?: string;
+    };
+    lightning: {
+      price: number;
+      discount: number;
+      taxIncluded: boolean;
+      kycRequired: boolean;
+      satsAmount: number;
+    };
+    stablecoin: {
+      price: number;
+      discount: number;
+      taxIncluded: boolean;
+      kycRequired: boolean;
+      acceptedTokens: string[];
+      networks: string[];
+    };
+  };
+  price?: number; // For free tier
 }
 
 export function PricingClient() {
@@ -48,6 +83,14 @@ export function PricingClient() {
   const createCheckout = trpc.payments.createPremiumCheckout.useMutation();
   const createLifetimeCheckout =
     trpc.payments.createLifetimeCheckout.useMutation();
+  const createLightningCheckout =
+    trpc.payments.createLightningCheckout.useMutation();
+  const createStablecoinCheckout =
+    trpc.payments.createStablecoinCheckout.useMutation();
+  const verifyLightningPayment =
+    trpc.payments.verifyLightningPayment.useMutation();
+  const verifyStablecoinPayment =
+    trpc.payments.verifyStablecoinPayment.useMutation();
   const cancelSubscription = trpc.payments.cancelSubscription.useMutation();
 
   const handleLogout = () => {
@@ -74,36 +117,135 @@ export function PricingClient() {
     );
   }
 
-  const handleUpgrade = async (tier: "premium" | "lifetime") => {
+  const handleUpgrade = async (
+    tier: Tier,
+    paymentMethod: PaymentMethod = "stripe",
+    details?: { token?: StablecoinToken; network?: StablecoinNetwork }
+  ) => {
     setIsLoading(tier);
     try {
-      let checkoutUrl: string;
+      if (paymentMethod === "stripe") {
+        const currentUrl = window.location.origin;
+        const successUrl = `${currentUrl}/dashboard?upgrade=success`;
+        const cancelUrl = `${currentUrl}/dashboard/pricing?canceled=true`;
 
-      const currentUrl = window.location.origin;
-      const successUrl = `${currentUrl}/dashboard?upgrade=success`;
-      const cancelUrl = `${currentUrl}/dashboard/pricing?canceled=true`;
+        let checkoutUrl: string;
+        if (tier === "premium") {
+          const result = await createCheckout.mutateAsync({
+            successUrl,
+            cancelUrl,
+          });
+          checkoutUrl = result.url;
+        } else {
+          const result = await createLifetimeCheckout.mutateAsync({
+            successUrl,
+            cancelUrl,
+          });
+          checkoutUrl = result.url;
+        }
 
-      if (tier === "premium") {
-        const result = await createCheckout.mutateAsync({
-          successUrl,
-          cancelUrl,
+        // Redirect to Stripe Checkout
+        window.location.href = checkoutUrl;
+      } else if (paymentMethod === "lightning") {
+        const result = await createLightningCheckout.mutateAsync({
+          tier,
+          paymentMethod: "lightning",
         });
-        checkoutUrl = result.url;
-      } else {
-        const result = await createLifetimeCheckout.mutateAsync({
-          successUrl,
-          cancelUrl,
+
+        // Show Lightning payment modal/page
+        showLightningPayment(result);
+      } else if (paymentMethod === "stablecoin" && details) {
+        const result = await createStablecoinCheckout.mutateAsync({
+          tier,
+          paymentMethod: "stablecoin",
+          token: details.token!,
+          network: details.network!,
         });
-        checkoutUrl = result.url;
+
+        // Show stablecoin payment modal/page
+        showStablecoinPayment(result);
       }
-
-      // Redirect to Stripe Checkout
-      window.location.href = checkoutUrl;
     } catch (error) {
       console.error("Failed to create checkout session:", error);
       alert("Failed to start checkout. Please try again.");
     } finally {
       setIsLoading(null);
+    }
+  };
+
+  const showLightningPayment = (invoice: any) => {
+    // In a real implementation, you would show a modal or navigate to a payment page
+    const paymentWindow = window.open("", "_blank", "width=600,height=700");
+    if (paymentWindow) {
+      paymentWindow.document.write(`
+        <html>
+          <head><title>Lightning Payment</title></head>
+          <body style="font-family: system-ui; padding: 20px; text-align: center;">
+            <h2>Pay with Bitcoin Lightning</h2>
+            <div style="margin: 20px 0;">
+              <p><strong>Amount:</strong> ${invoice.amountUSD} USD (${invoice.amount} sats)</p>
+              <p><strong>Tier:</strong> ${invoice.tier}</p>
+            </div>
+            <div style="background: #f5f5f5; padding: 20px; margin: 20px 0; word-break: break-all;">
+              <p><strong>Lightning Invoice:</strong></p>
+              <code>${invoice.bolt11}</code>
+            </div>
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 8px;">
+              <p><strong>Instructions:</strong></p>
+              <ol style="text-align: left;">
+                <li>Copy the Lightning invoice above</li>
+                <li>Open your Lightning wallet</li>
+                <li>Paste and pay the invoice</li>
+                <li>Payment will be verified automatically</li>
+              </ol>
+            </div>
+            <button onclick="window.close()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Close
+            </button>
+          </body>
+        </html>
+      `);
+    }
+  };
+
+  const showStablecoinPayment = (payment: any) => {
+    // In a real implementation, you would show a modal or navigate to a payment page
+    const paymentWindow = window.open("", "_blank", "width=600,height=700");
+    if (paymentWindow) {
+      paymentWindow.document.write(`
+        <html>
+          <head><title>Stablecoin Payment</title></head>
+          <body style="font-family: system-ui; padding: 20px; text-align: center;">
+            <h2>Pay with ${payment.token} (${payment.network})</h2>
+            <div style="margin: 20px 0;">
+              <p><strong>Amount:</strong> $${payment.amount} USD</p>
+              <p><strong>Token:</strong> ${payment.token}</p>
+              <p><strong>Network:</strong> ${payment.network}</p>
+              <p><strong>Tier:</strong> ${payment.tier}</p>
+            </div>
+            <div style="background: #f5f5f5; padding: 20px; margin: 20px 0; word-break: break-all;">
+              <p><strong>Send ${payment.token} to this address:</strong></p>
+              <code style="font-size: 14px;">${payment.walletAddress}</code>
+            </div>
+            <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; margin: 20px 0; border-radius: 8px;">
+              <p><strong>Payment Reference:</strong> ${payment.paymentRef}</p>
+              <p style="font-size: 12px; color: #666;">Include this reference in your transaction memo if possible</p>
+            </div>
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 8px;">
+              <p><strong>Instructions:</strong></p>
+              <ol style="text-align: left;">
+                <li>Send exactly $${payment.amount} worth of ${payment.token} to the address above</li>
+                <li>Use the ${payment.network} network</li>
+                <li>Include the payment reference if possible</li>
+                <li>Your account will be upgraded after confirmation</li>
+              </ol>
+            </div>
+            <button onclick="window.close()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Close
+            </button>
+          </body>
+        </html>
+      `);
     }
   };
 
@@ -258,57 +400,12 @@ export function PricingClient() {
         {/* Pricing Plans */}
         <Section>
           {pricing && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <PricingCard
-                name={pricing.free.name}
-                price={pricing.free.price}
-                description="Perfect for getting started"
-                features={pricing.free.features}
-                buttonText={
-                  currentTier === "free" ? "Current Plan" : "Downgrade"
-                }
-                onUpgrade={() => {}}
-                currentPlan={currentTier === "free"}
-                disabled={currentTier === "free"}
-              />
-
-              <PricingCard
-                name={pricing.premium.name}
-                price={pricing.premium.price}
-                period="/year"
-                description="For serious users"
-                features={pricing.premium.features}
-                buttonText={
-                  currentTier === "free"
-                    ? "Upgrade to Premium"
-                    : currentTier === "premium"
-                    ? "Current Plan"
-                    : "Not Available"
-                }
-                onUpgrade={() => handleUpgrade("premium")}
-                popular={currentTier === "free"}
-                currentPlan={currentTier === "premium"}
-                disabled={currentTier !== "free"}
-                loading={isLoading === "premium"}
-              />
-
-              <PricingCard
-                name={pricing.lifetime.name}
-                price={pricing.lifetime.price}
-                period="one-time"
-                description="Pay once, use forever"
-                features={pricing.lifetime.features}
-                buttonText={
-                  currentTier === "lifetime"
-                    ? "Current Plan"
-                    : "Get Lifetime Access"
-                }
-                onUpgrade={() => handleUpgrade("lifetime")}
-                currentPlan={currentTier === "lifetime"}
-                disabled={currentTier === "lifetime"}
-                loading={isLoading === "lifetime"}
-              />
-            </div>
+            <ResponsivePricing
+              pricing={pricing}
+              currentTier={currentTier}
+              onUpgrade={handleUpgrade}
+              isLoading={isLoading}
+            />
           )}
         </Section>
 
@@ -345,7 +442,7 @@ export function PricingClient() {
                     subjectLength: "300 chars",
                     contentLength: "10K chars",
                     scheduling: "Advanced",
-                    relays: "5 relays",
+                    relays: "10 relays",
                     decentralization: "Enhanced",
                     encryption: true,
                     support: true,
@@ -355,13 +452,13 @@ export function PricingClient() {
                 {
                   name: "Lifetime",
                   features: {
-                    maxEmails: "100",
+                    maxEmails: "50",
                     recipients: "10",
                     subjectLength: "300 chars",
                     contentLength: "10K chars",
                     scheduling: "Advanced",
-                    relays: "10 relays",
-                    decentralization: "Maximum",
+                    relays: "3 relays",
+                    decentralization: "Optimized",
                     encryption: true,
                     support: true,
                     updates: true,
@@ -411,18 +508,28 @@ export function PricingClient() {
               {
                 question: "Do you offer refunds?",
                 answer:
-                  "We offer a 30-day money-back guarantee for all card payments through Stripe. Cryptocurrency payments are final and non-refundable due to their irreversible nature.",
+                  "We offer a 30-day money-back guarantee for credit card payments through Stripe. Bitcoin Lightning and stablecoin payments are final and non-refundable due to their irreversible nature. Please ensure you want to proceed before paying with cryptocurrency.",
               },
-                          {
-              question: "What are relays and why do they matter?",
-              answer:
-                "Relays are Nostr servers that store your encrypted messages across the decentralized network. More relays mean better redundancy and decentralization - if one goes down, your messages are still safe on others. Free users get 1 relay, while premium users get multiple relays for maximum security."
-            },
-            {
-              question: "What payment methods do you accept?",
-              answer:
-                "We currently accept all major credit cards through Stripe. Bitcoin and Lightning payment options are planned for future releases.",
-            },
+              {
+                question: "What are relays and why do they matter?",
+                answer:
+                  "Relays are Nostr servers that store your encrypted messages across the decentralized network. More relays mean better redundancy and decentralization - if one goes down, your messages are still safe on others. Free users get 1 relay, while premium users get multiple relays for maximum security.",
+              },
+              {
+                question: "What payment methods do you accept?",
+                answer:
+                  "We accept three payment methods: (1) Credit/debit cards through Stripe with standard pricing plus local taxes and KYC required, (2) Bitcoin Lightning Network with 10% discount, no taxes, and no personal information required, (3) Stablecoins (USDT/USDC) on Ethereum or TRON networks with 7% discount, no taxes, and no personal information required.",
+              },
+              {
+                question: "Why do cryptocurrency payments have discounts?",
+                answer:
+                  "Cryptocurrency payments (Lightning and stablecoins) have lower processing fees and reduce our operational costs, so we pass these savings on to you. They also don't require tax collection or KYC verification, making the process faster and more private.",
+              },
+              {
+                question: "Are cryptocurrency payments really anonymous?",
+                answer:
+                  "Bitcoin Lightning and stablecoin payments don't require you to provide personal information to us. However, transactions may still be traceable on their respective networks. Lightning offers more privacy than on-chain Bitcoin, while stablecoin transactions are visible on the blockchain.",
+              },
               {
                 question: "Is my data secure during upgrades?",
                 answer:
@@ -488,7 +595,8 @@ export function PricingClient() {
             </div>
             <p className="text-sm text-gray-500 mt-4">
               * 30-day money back guarantee applies to card payments only.
-              Cryptocurrency payments are final.
+              Bitcoin Lightning and stablecoin payments are final and
+              non-refundable.
             </p>
           </div>
         </Section>

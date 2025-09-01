@@ -3,6 +3,9 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LandingPageClient } from "./landing-page-client";
 import { Navbar } from "@/components/ui/navbar";
+import { db } from "../../../../../apps/backend/src/db/connection";
+import { pricingTiers } from "../../../../../apps/backend/src/db/schema";
+import { eq } from "drizzle-orm";
 
 // Server Component for static content and initial SEO
 async function getAppStats() {
@@ -16,9 +19,111 @@ async function getAppStats() {
   };
 }
 
+// Helper function to generate dynamic features based on tier limits (same as backend)
+function generateTierFeatures(tier: any): string[] {
+  const features = [];
+
+  if (tier.name === "free") {
+    features.push(
+      `Up to ${tier.maxEmails} emails`,
+      `${tier.maxRecipients} recipients per email`,
+      `${tier.maxSubjectLength} character subject line`,
+      `${tier.maxContentLength.toLocaleString()} character content`,
+      "Basic scheduling",
+      "Nostr encryption",
+      "Single relay storage (basic)"
+    );
+  } else if (tier.name === "premium") {
+    features.push(
+      `Up to ${tier.maxEmails} emails`,
+      `${tier.maxRecipients} recipients per email`,
+      `${tier.maxSubjectLength} character subject line`,
+      `${tier.maxContentLength.toLocaleString()} character content`,
+      "Advanced scheduling",
+      "Nostr encryption",
+      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
+      "Enhanced decentralization",
+      "10% off with Bitcoin Lightning",
+      "7% off with stablecoins",
+      "Priority support"
+    );
+  } else if (tier.name === "lifetime") {
+    features.push(
+      `Up to ${tier.maxEmails} emails`,
+      `${tier.maxRecipients} recipients per email`,
+      "One-time payment",
+      "Lifetime updates",
+      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
+      "Optimized decentralization",
+      "10% off with Bitcoin Lightning",
+      "7% off with stablecoins",
+      "Priority support"
+    );
+  }
+
+  return features;
+}
+
+// Server-side function to get pricing data from database
+async function getPricingData() {
+  try {
+    const tiers = await db
+      .select()
+      .from(pricingTiers)
+      .where(eq(pricingTiers.isActive, true))
+      .orderBy(pricingTiers.sortOrder);
+
+    const pricingData: any = {};
+
+    for (const tier of tiers) {
+      pricingData[tier.name] = {
+        name: tier.displayName,
+        maxEmails: tier.maxEmails,
+        maxRecipients: tier.maxRecipients,
+        maxSubjectLength: tier.maxSubjectLength,
+        maxContentLength: tier.maxContentLength,
+        maxRelays: tier.maxRelays,
+        features: generateTierFeatures(tier),
+      };
+    }
+
+    return pricingData;
+  } catch (error) {
+    console.error("Error fetching pricing data:", error);
+    // Fallback to basic structure if database fails
+    return {
+      free: {
+        name: "Free",
+        features: [
+          "2 emails maximum",
+          "2 recipients per email",
+          "Basic features",
+        ],
+      },
+      premium: {
+        name: "Premium",
+        features: [
+          "100 emails maximum",
+          "10 recipients per email",
+          "Advanced features",
+        ],
+      },
+      lifetime: {
+        name: "Lifetime",
+        features: [
+          "50 emails maximum",
+          "10 recipients per email",
+          "Lifetime access",
+        ],
+      },
+    };
+  }
+}
+
 export async function LandingPageServer() {
   // Fetch data on the server for initial render
   const appStats = await getAppStats();
+  const pricingData = await getPricingData();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -150,58 +255,31 @@ export async function LandingPageServer() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <PricingCard
-              name="Free"
+              name={pricingData.free?.name || "Free"}
               price="$0"
               period="forever"
               description="Perfect for getting started"
-              features={[
-                "2 emails maximum",
-                "2 recipients per email",
-                "125 character subject",
-                "2,000 character content",
-                "Basic scheduling",
-                "Nostr encryption",
-                "Single relay storage",
-              ]}
+              features={pricingData.free?.features || ["Basic features"]}
               buttonText="Get Started Free"
               buttonVariant="outline"
             />
             <PricingCard
-              name="Premium"
-              price="$15"
+              name={pricingData.premium?.name || "Premium"}
+              price="From $13.50"
               period="per year"
               description="For serious users"
-              features={[
-                "100 emails maximum",
-                "10 recipients per email",
-                "300 character subject",
-                "10,000 character content",
-                "Advanced scheduling",
-                "Nostr encryption",
-                "Multi-relay storage (5 relays)",
-                "Priority support",
-              ]}
-              buttonText="Upgrade to Premium"
+              features={pricingData.premium?.features || ["Advanced features"]}
+              buttonText="Get Started"
               buttonVariant="primary"
               popular={true}
             />
             <PricingCard
-              name="Lifetime"
-              price="$60"
+              name={pricingData.lifetime?.name || "Lifetime"}
+              price="From $54"
               period="one-time"
               description="Pay once, use forever"
-              features={[
-                "100 emails maximum",
-                "10 recipients per email",
-                "300 character subject",
-                "10,000 character content",
-                "Advanced scheduling",
-                "Nostr encryption",
-                "Maximum relay storage (10 relays)",
-                "Lifetime updates",
-                "Priority support",
-              ]}
-              buttonText="Get Lifetime Access"
+              features={pricingData.lifetime?.features || ["Lifetime access"]}
+              buttonText="Get Started"
               buttonVariant="outline"
             />
           </div>

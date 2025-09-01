@@ -119,6 +119,7 @@ export function TierLimits({
               <ul className="text-xs text-gray-600 space-y-1 mb-3">
                 <li>• 100 emails instead of 2</li>
                 <li>• 10 recipients per email</li>
+                <li>• Up to 10 relay storage</li>
                 <li>• Longer subjects & content</li>
                 <li>• Priority support</li>
               </ul>
