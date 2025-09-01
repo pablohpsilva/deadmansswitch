@@ -5,9 +5,11 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc";
+import { useAuthRefresh } from "./useAuthRefresh";
 
 export function useGlobalData() {
   const queryClient = useQueryClient();
+  const authRefresh = useAuthRefresh();
 
   // User session data (cached globally)
   const userSession = (trpc as any).auth.me.useQuery(undefined, {
@@ -15,12 +17,23 @@ export function useGlobalData() {
     gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: true, // Important for auth state
     retry: (failureCount: number, error: any) => {
-      // Don't retry on 401/403 errors (likely auth issues)
+      // For auth errors, handle them differently
       if (error && "status" in error) {
         const status = (error as any).status;
-        if (status === 401 || status === 403) return false;
+        if (status === 401 || status === 403) {
+          // Trigger async auth refresh (don't wait for it)
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error(
+                "Auth refresh failed in useGlobalData:",
+                refreshError
+              );
+            });
+          }
+          return false; // Don't retry immediately, let the auth refresh handle it
+        }
       }
-      return failureCount < 2;
+      return failureCount < 2; // Normal retry logic for non-auth errors
     },
   });
 
@@ -29,6 +42,28 @@ export function useGlobalData() {
     staleTime: 15 * 60 * 1000, // 15 minutes
     gcTime: 60 * 60 * 1000, // 1 hour
     enabled: !!userSession.data, // Only fetch if user is authenticated
+    retry: (failureCount: number, error: any) => {
+      // Handle auth errors with refresh (async, fire-and-forget)
+      if (
+        error &&
+        ("status" in error || error?.data?.code === "UNAUTHORIZED")
+      ) {
+        const status = (error as any).status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          error?.data?.code === "UNAUTHORIZED"
+        ) {
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error("Auth refresh failed in tierLimits:", refreshError);
+            });
+          }
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
   });
 
   // App configuration or stats from API
@@ -63,12 +98,8 @@ export function useGlobalData() {
   const isLoading = userSession.isLoading;
   const authError = userSession.error;
 
-  // Logout function that clears all cache
-  const logout = () => {
-    localStorage.removeItem("auth_token");
-    queryClient.clear(); // Clear all cached data
-    window.location.href = "/"; // Hard redirect to clear state
-  };
+  // Enhanced logout function using auth refresh hook
+  const logout = authRefresh.forceLogout;
 
   return {
     // User data
@@ -91,6 +122,12 @@ export function useGlobalData() {
     authError,
     logout,
     prefetchUserData,
+
+    // Auth refresh utilities
+    handleAuthError: authRefresh.handleAuthError,
+    refreshToken: authRefresh.refreshToken,
+    refreshIfNeeded: authRefresh.refreshIfNeeded,
+    checkTokenExpiry: authRefresh.checkTokenExpiry,
   };
 }
 

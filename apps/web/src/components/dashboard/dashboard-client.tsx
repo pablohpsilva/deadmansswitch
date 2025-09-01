@@ -11,6 +11,7 @@ import { AuthDebugger } from "../debug/auth-debug";
 import { useDashboardData } from "@/hooks/useAdvancedQueries";
 import { useBackgroundSync } from "@/hooks/useAdvancedQueries";
 import { useUserPreferences } from "@/hooks/usePersistedState";
+import { useGlobalData } from "@/hooks/useGlobalData";
 import { Card, Button } from "@/components/ui/card";
 import { Navbar } from "@/components/ui/navbar";
 
@@ -44,6 +45,9 @@ export function DashboardClient() {
   // User preferences
   const { data: preferences, update: updatePreferences } = useUserPreferences();
 
+  // Global data with auth refresh capabilities
+  const { refreshIfNeeded, logout } = useGlobalData();
+
   // Check authentication and handle payment success
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
@@ -51,6 +55,12 @@ export function DashboardClient() {
       router.push("/auth/login");
       return;
     }
+
+    // Preemptively refresh token if needed
+    refreshIfNeeded().catch((error) => {
+      console.error("Failed to refresh token on dashboard load:", error);
+      // If refresh fails, the auth refresh hook will handle logout
+    });
 
     // Check for payment success in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -62,7 +72,7 @@ export function DashboardClient() {
       // Hide success message after 5 seconds
       setTimeout(() => setShowSuccessMessage(false), 5000);
     }
-  }, [router]);
+  }, [router, refreshIfNeeded]);
 
   // Refetch function for backward compatibility
   const refetchEmails = () => {
@@ -171,18 +181,62 @@ export function DashboardClient() {
   if (!user || hasErrors) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">
-            {!user ? "Authentication required" : "Error loading dashboard data"}
-          </p>
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="mb-6">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              {!user ? "Authentication Required" : "Dashboard Error"}
+            </h2>
+            <p className="text-gray-600 mb-4">
+              {!user 
+                ? "Your session has expired. We're attempting to refresh your authentication..." 
+                : "We're having trouble loading your dashboard data."}
+            </p>
+          </div>
+
           {hasErrors && (
-            <div className="mb-4 text-sm text-red-500">
-              {emailsError && <p>Email error: {emailsError.message}</p>}
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+              <h4 className="font-medium text-red-800 mb-2">
+                Connection Issues:
+              </h4>
+              <div className="text-red-700 text-sm space-y-1">
+                {queryStatus.user.error && (
+                  <div>• Authentication: {queryStatus.user.errorMsg}</div>
+                )}
+                {queryStatus.emails.error && (
+                  <div>• Emails: {queryStatus.emails.errorMsg}</div>
+                )}
+                {queryStatus.tierLimits.error && (
+                  <div>• Settings: {queryStatus.tierLimits.errorMsg}</div>
+                )}
+              </div>
             </div>
           )}
-          <Button onClick={() => router.push("/auth/login")} variant="primary">
-            Go to Login
-          </Button>
+
+          <div className="space-y-3">
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="primary"
+              className="w-full"
+            >
+              Retry Connection
+            </Button>
+            <Button 
+              onClick={logout} 
+              variant="outline"
+              className="w-full"
+            >
+              Sign Out & Return to Login
+            </Button>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-4">
+            If the problem persists, please try clearing your browser cache or contact support.
+          </p>
         </div>
       </div>
     );

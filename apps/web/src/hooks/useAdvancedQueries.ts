@@ -4,23 +4,95 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useAuthRefresh } from "./useAuthRefresh";
 
 // Parallel queries for dashboard data
 export function useDashboardData() {
+  const authRefresh = useAuthRefresh();
+
   // Use the React hooks instead of the vanilla client for better integration
   const emailsQuery = (trpc as any).emails.getEmails.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: (failureCount: number, error: any) => {
+      // Handle auth errors with refresh (fire-and-forget)
+      if (
+        error &&
+        ("status" in error || error?.data?.code === "UNAUTHORIZED")
+      ) {
+        const status = (error as any).status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          error?.data?.code === "UNAUTHORIZED"
+        ) {
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error(
+                "Auth refresh failed in emails query:",
+                refreshError
+              );
+            });
+          }
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
   });
 
   const tierQuery = (trpc as any).emails.getTierLimits.useQuery(undefined, {
     staleTime: 15 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    retry: (failureCount: number, error: any) => {
+      // Handle auth errors with refresh (fire-and-forget)
+      if (
+        error &&
+        ("status" in error || error?.data?.code === "UNAUTHORIZED")
+      ) {
+        const status = (error as any).status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          error?.data?.code === "UNAUTHORIZED"
+        ) {
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error("Auth refresh failed in tier query:", refreshError);
+            });
+          }
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
   });
 
   const userQuery = (trpc as any).auth.me.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
+    retry: (failureCount: number, error: any) => {
+      // Handle auth errors with refresh (fire-and-forget)
+      if (
+        error &&
+        ("status" in error || error?.data?.code === "UNAUTHORIZED")
+      ) {
+        const status = (error as any).status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          error?.data?.code === "UNAUTHORIZED"
+        ) {
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error("Auth refresh failed in user query:", refreshError);
+            });
+          }
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
   });
 
   // Remove this line since we're not using useQueries anymore
@@ -140,6 +212,8 @@ export function useInfiniteEmails() {
 
 // Background sync for critical data
 export function useBackgroundSync() {
+  const authRefresh = useAuthRefresh();
+
   // Keep user auth status fresh
   const userSync = useQuery({
     queryKey: ["background-user-sync"],
@@ -148,6 +222,28 @@ export function useBackgroundSync() {
     staleTime: 0, // Always consider stale for background sync
     gcTime: 1 * 60 * 1000, // Short cache time
     refetchOnWindowFocus: false, // Prevent double requests
+    retry: (failureCount: number, error: any) => {
+      // Handle auth errors with refresh (fire-and-forget)
+      if (
+        error &&
+        ("status" in error || error?.data?.code === "UNAUTHORIZED")
+      ) {
+        const status = (error as any).status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          error?.data?.code === "UNAUTHORIZED"
+        ) {
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error("Auth refresh failed in user sync:", refreshError);
+            });
+          }
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
   });
 
   // Background email sync (less frequent)
@@ -158,6 +254,28 @@ export function useBackgroundSync() {
     staleTime: 0,
     gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
+    retry: (failureCount: number, error: any) => {
+      // Handle auth errors with refresh (fire-and-forget)
+      if (
+        error &&
+        ("status" in error || error?.data?.code === "UNAUTHORIZED")
+      ) {
+        const status = (error as any).status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          error?.data?.code === "UNAUTHORIZED"
+        ) {
+          if (failureCount === 0) {
+            authRefresh.handleAuthError(error).catch((refreshError) => {
+              console.error("Auth refresh failed in email sync:", refreshError);
+            });
+          }
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
   });
 
   return {
