@@ -29,22 +29,22 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
     recommendation: string;
   } | null>(null);
 
-  const checkInMutation = trpc.auth.checkIn.useMutation({
+  const checkInMutation = (trpc as any).auth.checkIn.useMutation({
     onSuccess: () => {
       alert("Check-in successful!");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Check-in failed:", error);
       alert("Check-in failed. Please try again.");
     },
   });
 
-  const exportKeysMutation = trpc.auth.exportNostrKeys.useMutation({
-    onSuccess: (data) => {
+  const exportKeysMutation = (trpc as any).auth.exportNostrKeys.useMutation({
+    onSuccess: (data: any) => {
       setExportedKeys(data);
       setShowExportKeys(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Export keys failed:", error);
       alert(`Failed to export keys: ${error.message}`);
     },

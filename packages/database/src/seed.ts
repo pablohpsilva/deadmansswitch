@@ -1,14 +1,22 @@
-import { db } from "./connection";
-import { users, nostrRelays } from "./schema";
-import { generateNostrKeypair, encryptData } from "@/lib/auth";
-import dotenv from "dotenv";
+import { db, users, nostrRelays, seedPricing } from "./index";
 
-dotenv.config();
+interface SeedOptions {
+  generateNostrKeypair: () => Promise<{
+    privateKey: string;
+    publicKey: string;
+  }>;
+  encryptData: (data: string) => string;
+}
 
-async function seed() {
+export async function seedDatabase(options: SeedOptions) {
   console.log("🌱 Seeding database...");
 
+  const { generateNostrKeypair, encryptData } = options;
+
   try {
+    // Seed pricing data first
+    await seedPricing();
+
     // Create a test user
     const keypair = await generateNostrKeypair();
 
@@ -42,10 +50,29 @@ async function seed() {
 
     console.log("✅ Added default Nostr relays");
     console.log("🎉 Database seeded successfully");
+
+    return {
+      testUser: testUser[0],
+      relaysAdded: defaultRelays.length,
+    };
   } catch (error) {
     console.error("❌ Seeding failed:", error);
-    process.exit(1);
+    throw error;
   }
 }
 
-seed();
+// Simple seeding function without crypto dependencies (for basic testing)
+export async function seedDatabaseBasic() {
+  console.log("🌱 Seeding database (basic)...");
+
+  try {
+    // Seed pricing data
+    await seedPricing();
+    console.log("✅ Pricing data seeded");
+
+    return { message: "Basic seeding completed" };
+  } catch (error) {
+    console.error("❌ Basic seeding failed:", error);
+    throw error;
+  }
+}

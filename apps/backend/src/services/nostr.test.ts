@@ -14,12 +14,11 @@ import {
   NostrEvent,
   UnsignedNostrEvent,
 } from "./nostr";
-import { db } from "../db/connection";
-import { nostrRelays } from "../db/schema";
+import { db, nostrRelays } from "@deadmansswitch/database";
 import * as nostrTools from "nostr-tools";
 
 // Mock dependencies
-vi.mock("../db/connection");
+vi.mock("@deadmansswitch/database");
 vi.mock("nostr-tools");
 
 const mockDbChain = {

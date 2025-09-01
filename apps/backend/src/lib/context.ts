@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { db } from "../db/connection";
+import { db } from "@deadmansswitch/database";
 import { verifyToken } from "./auth";
 
 export interface TRPCContext {

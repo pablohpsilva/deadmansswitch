@@ -46,11 +46,11 @@ export function LightningPayment({
 
   // tRPC mutations
   const createPremiumInvoice =
-    trpc.payments.createLightningPremiumInvoice.useMutation();
+    (trpc as any).payments.createLightningPremiumInvoice.useMutation();
   const createLifetimeInvoice =
-    trpc.payments.createLightningLifetimeInvoice.useMutation();
-  const verifyPayment = trpc.payments.verifyLightningPayment.useMutation();
-  const paymentStatus = trpc.payments.getLightningPaymentStatus.useQuery(
+    (trpc as any).payments.createLightningLifetimeInvoice.useMutation();
+  const verifyPayment = (trpc as any).payments.verifyLightningPayment.useMutation();
+  const paymentStatus = (trpc as any).payments.getLightningPaymentStatus.useQuery(
     { paymentHash },
     { enabled: !!paymentHash, refetchInterval: 2000 }
   );

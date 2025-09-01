@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
 import * as crypto from "crypto";
-import { db } from "../db/connection";
-import { users } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { db, users, eq } from "@deadmansswitch/database";
 
 const TEMP_PASSWORD_EXPIRES = 24 * 60 * 60 * 1000; // 24 hours
 

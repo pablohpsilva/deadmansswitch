@@ -33,9 +33,7 @@ export interface UnsignedNostrEvent {
   tags: string[][];
   content: string;
 }
-import { db } from "../db/connection";
-import { nostrRelays } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { db, nostrRelays, eq } from "@deadmansswitch/database";
 
 export class NostrService {
   private pool: any; // SimplePool interface varies by version, using flexible typing

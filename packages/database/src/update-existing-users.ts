@@ -5,11 +5,10 @@
  * Run this AFTER applying the database migration
  */
 
-import { db } from "./connection";
-import { users } from "./schema";
+import { db, users } from "./index";
 import { isNotNull, isNull } from "drizzle-orm";
 
-async function updateExistingUsers() {
+export async function updateExistingUsers() {
   console.log("🔄 Starting user auth type migration...");
 
   try {
@@ -75,6 +74,12 @@ async function updateExistingUsers() {
     }
 
     console.log(`\n🎉 User auth type migration completed successfully!`);
+    return {
+      totalUsers: totalUsers.length,
+      emailUsers: emailUsers.length,
+      nostrUsers: nostrUsers.length,
+      securityIssues: nostrUsersWithPrivateKeys.length,
+    };
   } catch (error) {
     console.error("❌ Migration failed:", error);
     throw error;
@@ -84,8 +89,8 @@ async function updateExistingUsers() {
 // Run the migration if this script is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   updateExistingUsers()
-    .then(() => {
-      console.log("Migration completed. Exiting.");
+    .then((result) => {
+      console.log("Migration completed:", result);
       process.exit(0);
     })
     .catch((error) => {

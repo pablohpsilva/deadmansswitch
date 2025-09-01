@@ -55,7 +55,7 @@ class NWCService {
       this.nwc = new webln.NWC({
         nostrWalletConnectUrl: connectionUri,
         authToken: this.extractAuthToken(connectionUri),
-      });
+      } as any);
 
       // Enable the connection
       await this.nwc.enable();

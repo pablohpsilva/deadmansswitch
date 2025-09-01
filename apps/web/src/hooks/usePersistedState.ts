@@ -109,7 +109,7 @@ export function usePersistedQuery<T>(
   // Mutation to update local data
   const updateMutation = useMutation({
     mutationFn: async (newData: T) => newData,
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.setQueryData([key], data);
       setPersistedData(data);
     },

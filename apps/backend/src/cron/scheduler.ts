@@ -1,7 +1,14 @@
 import * as cron from "node-cron";
-import { db } from "../db/connection";
-import { users, deadmanEmails, emailRecipients, auditLogs } from "../db/schema";
-import { eq, and, lt, lte, isNull, isNotNull } from "drizzle-orm";
+import {
+  db,
+  users,
+  deadmanEmails,
+  emailRecipients,
+  auditLogs,
+  eq,
+  and,
+} from "@deadmansswitch/database";
+import { lt, lte, isNull, isNotNull } from "drizzle-orm";
 import { sendDeadmanEmail } from "../services/email";
 import { nostrService } from "../services/nostr";
 import { decryptData } from "../lib/auth";
@@ -175,7 +182,7 @@ async function sendEmail(
         sentResults.push({
           success: false,
           recipient: "unknown",
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -236,7 +243,7 @@ async function sendEmail(
       details: JSON.stringify({
         emailId: email.id,
         title: email.title,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       }),
     } as any);
   }

@@ -11,7 +11,7 @@ export function useEmailCache() {
 
   // Prefetch multiple emails in parallel
   const prefetchEmails = (emailIds: string[]) => {
-    const utils = trpc.useUtils();
+    const utils = (trpc as any).useUtils();
 
     // Prefetch all emails in parallel
     emailIds.forEach((id) => {
@@ -28,28 +28,28 @@ export function useEmailCache() {
   // Get cached email without triggering a request
   const getCachedEmail = (emailId: string) => {
     return queryClient.getQueryData(
-      trpc.emails.getEmail.getQueryKey({ id: emailId })
+      (trpc as any).emails.getEmail.getQueryKey({ id: emailId })
     );
   };
 
   // Check if email data is cached and fresh
   const isEmailCached = (emailId: string) => {
     const queryState = queryClient.getQueryState(
-      trpc.emails.getEmail.getQueryKey({ id: emailId })
+      (trpc as any).emails.getEmail.getQueryKey({ id: emailId })
     );
 
     return {
       isCached: !!queryState,
       isFresh:
         !!queryState && queryState.dataUpdatedAt > Date.now() - 5 * 60 * 1000,
-      isStale: !!queryState && queryState.isStale,
+      isStale: !!queryState && (queryState as any).isStale,
     };
   };
 
   // Prime cache with known data (useful after mutations)
   const primeEmailCache = (emailId: string, emailData: any) => {
     queryClient.setQueryData(
-      trpc.emails.getEmail.getQueryKey({ id: emailId }),
+      (trpc as any).emails.getEmail.getQueryKey({ id: emailId }),
       emailData
     );
   };
@@ -57,7 +57,7 @@ export function useEmailCache() {
   // Invalidate specific email cache
   const invalidateEmail = (emailId: string) => {
     queryClient.invalidateQueries({
-      queryKey: trpc.emails.getEmail.getQueryKey({ id: emailId }),
+      queryKey: (trpc as any).emails.getEmail.getQueryKey({ id: emailId }),
     });
   };
 
@@ -71,7 +71,7 @@ export function useEmailCache() {
   // Remove email from cache (useful after deletion)
   const removeEmailFromCache = (emailId: string) => {
     queryClient.removeQueries({
-      queryKey: trpc.emails.getEmail.getQueryKey({ id: emailId }),
+      queryKey: (trpc as any).emails.getEmail.getQueryKey({ id: emailId }),
     });
   };
 
@@ -93,7 +93,7 @@ export function useEmailCache() {
 
   // Preload critical data for dashboard
   const preloadDashboard = () => {
-    const utils = trpc.useUtils();
+    const utils = (trpc as any).useUtils();
 
     // Preload user info
     utils.auth.me.prefetch();

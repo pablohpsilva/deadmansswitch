@@ -35,12 +35,12 @@ export function EmailList({
 }: EmailListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const deleteEmailMutation = trpc.emails.deleteEmail.useMutation({
+  const deleteEmailMutation = (trpc as any).emails.deleteEmail.useMutation({
     onSuccess: () => {
       onRefresh();
       setDeletingId(null);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to delete email:", error);
       alert("Failed to delete email. Please try again.");
       setDeletingId(null);

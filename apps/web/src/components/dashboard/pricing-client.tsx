@@ -73,25 +73,25 @@ export function PricingClient() {
 
   // Fetch pricing data
   const { data: pricing, isLoading: pricingLoading } =
-    trpc.payments.getPricing.useQuery();
+    (trpc as any).payments.getPricing.useQuery();
 
   // Fetch current subscription status
   const { data: subscription, isLoading: subscriptionLoading } =
-    trpc.payments.getSubscription.useQuery();
+    (trpc as any).payments.getSubscription.useQuery();
 
   // Mutations
-  const createCheckout = trpc.payments.createPremiumCheckout.useMutation();
+  const createCheckout = (trpc as any).payments.createPremiumCheckout.useMutation();
   const createLifetimeCheckout =
-    trpc.payments.createLifetimeCheckout.useMutation();
+    (trpc as any).payments.createLifetimeCheckout.useMutation();
   const createLightningCheckout =
-    trpc.payments.createLightningCheckout.useMutation();
+    (trpc as any).payments.createLightningCheckout.useMutation();
   const createStablecoinCheckout =
-    trpc.payments.createStablecoinCheckout.useMutation();
+    (trpc as any).payments.createStablecoinCheckout.useMutation();
   const verifyLightningPayment =
-    trpc.payments.verifyLightningPayment.useMutation();
+    (trpc as any).payments.verifyLightningPayment.useMutation();
   const verifyStablecoinPayment =
-    trpc.payments.verifyStablecoinPayment.useMutation();
-  const cancelSubscription = trpc.payments.cancelSubscription.useMutation();
+    (trpc as any).payments.verifyStablecoinPayment.useMutation();
+  const cancelSubscription = (trpc as any).payments.cancelSubscription.useMutation();
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");

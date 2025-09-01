@@ -30,12 +30,12 @@ interface CreateEmailData {
 
 export function useOptimisticEmails() {
   const queryClient = useQueryClient();
-  const utils = trpc.useUtils();
+  const utils = (trpc as any).useUtils();
 
   // Enhanced create mutation with optimistic updates
-  const createEmail = trpc.emails.createEmail.useMutation({
+  const createEmail = (trpc as any).emails.createEmail.useMutation({
     // Optimistic update - immediately add email to UI
-    onMutate: async (newEmailData) => {
+    onMutate: async (newEmailData: any) => {
       // Cancel outgoing refetches to prevent overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ["emails"] });
 
@@ -68,7 +68,7 @@ export function useOptimisticEmails() {
     },
 
     // Rollback on error
-    onError: (error, variables, context) => {
+    onError: (error: any, variables: any, context: any) => {
       if (context?.previousEmails) {
         queryClient.setQueryData(["emails"], context.previousEmails);
       }
@@ -76,7 +76,7 @@ export function useOptimisticEmails() {
     },
 
     // Update with real data on success
-    onSuccess: (realEmail, variables, context) => {
+    onSuccess: (realEmail: any, variables: any, context: any) => {
       // Remove the optimistic email and add the real one
       const previousEmails = context?.previousEmails || [];
       const emailsWithoutOptimistic = previousEmails;
@@ -93,8 +93,8 @@ export function useOptimisticEmails() {
   });
 
   // Enhanced delete mutation with optimistic updates
-  const deleteEmail = trpc.emails.deleteEmail.useMutation({
-    onMutate: async (variables) => {
+  const deleteEmail = (trpc as any).emails.deleteEmail.useMutation({
+    onMutate: async (variables: any) => {
       await queryClient.cancelQueries({ queryKey: ["emails"] });
 
       const previousEmails =
@@ -109,7 +109,7 @@ export function useOptimisticEmails() {
       return { previousEmails, deletedId: variables.id };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: any, variables: any, context: any) => {
       if (context?.previousEmails) {
         queryClient.setQueryData(["emails"], context.previousEmails);
       }
@@ -122,8 +122,8 @@ export function useOptimisticEmails() {
   });
 
   // Enhanced update mutation with optimistic updates
-  const updateEmail = trpc.emails.updateEmail.useMutation({
-    onMutate: async (variables) => {
+  const updateEmail = (trpc as any).emails.updateEmail.useMutation({
+    onMutate: async (variables: any) => {
       await queryClient.cancelQueries({ queryKey: ["emails"] });
       await queryClient.cancelQueries({ queryKey: ["emails", variables.id] });
 
@@ -151,7 +151,7 @@ export function useOptimisticEmails() {
       return { previousEmails, previousEmail };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: any, variables: any, context: any) => {
       if (context?.previousEmails) {
         queryClient.setQueryData(["emails"], context.previousEmails);
       }
@@ -164,7 +164,7 @@ export function useOptimisticEmails() {
       console.error("Failed to update email:", error);
     },
 
-    onSettled: (data, error, variables) => {
+    onSettled: (data: any, error: any, variables: any) => {
       utils.emails.getEmails.invalidate();
       utils.emails.getEmail.invalidate({ id: variables.id });
     },

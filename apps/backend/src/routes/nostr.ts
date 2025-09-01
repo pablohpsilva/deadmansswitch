@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/lib/trpc";
-import { db } from "@/db/connection";
-import { nostrRelays } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { db, nostrRelays, eq, and } from "@deadmansswitch/database";
 import { nostrService } from "@/services/nostr";
 
 export const nostrRouter = createTRPCRouter({

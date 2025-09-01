@@ -5,9 +5,7 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "@/lib/trpc";
-import { db } from "@/db/connection";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { db, users, eq } from "@deadmansswitch/database";
 import {
   generateTempPassword,
   generateToken,

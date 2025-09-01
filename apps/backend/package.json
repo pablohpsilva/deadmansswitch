@@ -14,8 +14,10 @@
     "test:ui": "vitest --ui",
     "type-check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:migrate": "tsx -e 'import { runMigrations } from \"@deadmansswitch/database\"; runMigrations(\"./migrations\").then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })'",
+    "db:seed": "tsx -e 'import { seedDatabase } from \"@deadmansswitch/database\"; import { generateNostrKeypair, encryptData } from \"./src/lib/auth\"; seedDatabase({ generateNostrKeypair, encryptData }).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })'",
+    "db:seed-pricing": "tsx -e 'import { seedPricing } from \"@deadmansswitch/database\"; seedPricing().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })'",
+    "db:update-users": "tsx -e 'import { updateExistingUsers } from \"@deadmansswitch/database\"; updateExistingUsers().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })'"
   },
   "dependencies": {
     "@deadmansswitch/database": "workspace:*",

@@ -10,11 +10,11 @@ export function useGlobalData() {
   const queryClient = useQueryClient();
 
   // User session data (cached globally)
-  const userSession = trpc.auth.me.useQuery(undefined, {
+  const userSession = (trpc as any).auth.me.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: true, // Important for auth state
-    retry: (failureCount, error) => {
+    retry: (failureCount: number, error: any) => {
       // Don't retry on 401/403 errors (likely auth issues)
       if (error && "status" in error) {
         const status = (error as any).status;
@@ -25,7 +25,7 @@ export function useGlobalData() {
   });
 
   // Tier limits (rarely change, cache longer)
-  const tierLimits = trpc.emails.getTierLimits.useQuery(undefined, {
+  const tierLimits = (trpc as any).emails.getTierLimits.useQuery(undefined, {
     staleTime: 15 * 60 * 1000, // 15 minutes
     gcTime: 60 * 60 * 1000, // 1 hour
     enabled: !!userSession.data, // Only fetch if user is authenticated

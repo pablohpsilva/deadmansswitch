@@ -20,7 +20,7 @@ export function AuthDebugger() {
       let error = null;
 
       try {
-        authResult = await trpcClient.auth.me.query();
+        authResult = await (trpcClient as any).auth.me.query();
       } catch (err) {
         error = err;
       }
@@ -49,10 +49,10 @@ export function AuthDebugger() {
         authResult,
         error: error
           ? {
-              message: error.message,
-              name: error.name,
-              code: error.code || "Unknown",
-              cause: error.cause,
+              message: (error as any).message,
+              name: (error as any).name,
+              code: (error as any).code || "Unknown",
+              cause: (error as any).cause,
             }
           : null,
         networkInfo: {
@@ -67,8 +67,8 @@ export function AuthDebugger() {
     } catch (err) {
       setDebugInfo({
         error: {
-          message: err.message || "Unknown error",
-          stack: err.stack,
+          message: (err as any).message || "Unknown error",
+          stack: (err as any).stack,
         },
         timestamp: new Date().toISOString(),
       });

@@ -50,27 +50,29 @@ export function EmailForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Fetch email data for editing
-  const { data: existingEmail, isLoading } = trpc.emails.getEmail.useQuery(
+  const { data: existingEmail, isLoading } = (
+    trpc as any
+  ).emails.getEmail.useQuery(
     { id: emailId! },
     { enabled: mode === "edit" && !!emailId }
   );
 
   // Mutations
-  const createEmailMutation = trpc.emails.createEmail.useMutation({
+  const createEmailMutation = (trpc as any).emails.createEmail.useMutation({
     onSuccess: () => {
       onSuccess();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to create email:", error);
       alert(`Failed to create email: ${error.message}`);
     },
   });
 
-  const updateEmailMutation = trpc.emails.updateEmail.useMutation({
+  const updateEmailMutation = (trpc as any).emails.updateEmail.useMutation({
     onSuccess: () => {
       onSuccess();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to update email:", error);
       alert(`Failed to update email: ${error.message}`);
     },
@@ -85,7 +87,7 @@ export function EmailForm({
         content: existingEmail.content || "",
         recipients:
           existingEmail.recipients.length > 0
-            ? existingEmail.recipients.map((r) => ({
+            ? existingEmail.recipients.map((r: any) => ({
                 email: r.email,
                 name: r.name || "",
               }))

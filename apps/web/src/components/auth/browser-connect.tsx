@@ -352,7 +352,7 @@ export function BrowserConnect({
         ) : (
           <button
             onClick={handleAuthentication}
-            disabled={isLoading || step === "signing"}
+            disabled={isLoading}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? "Authenticating..." : "Authenticate with Extension"}

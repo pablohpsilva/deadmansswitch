@@ -9,8 +9,13 @@ import {
 } from "vitest";
 import * as cron from "node-cron";
 import { startCronJobs } from "./scheduler";
-import { db } from "../db/connection";
-import { users, deadmanEmails, emailRecipients, auditLogs } from "../db/schema";
+import {
+  db,
+  users,
+  deadmanEmails,
+  emailRecipients,
+  auditLogs,
+} from "@deadmansswitch/database";
 import { sendDeadmanEmail } from "../services/email";
 import { nostrService } from "../services/nostr";
 import { decryptData } from "../lib/auth";
@@ -166,13 +171,13 @@ describe("Cron Scheduler", () => {
       mockedNostrService.sendDeadmanEmailViaNostr.mockResolvedValue(undefined);
 
       // Mock email service
-      mockedSendDeadmanEmail.mockResolvedValue(undefined);
+      mockedSendDeadmanEmail.mockResolvedValue(true);
 
       // Import and run the private function by capturing it from cron.schedule
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.log).toHaveBeenCalledWith(
         "🔍 Checking for scheduled emails to send..."
@@ -192,7 +197,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.error).toHaveBeenCalledWith(
         "❌ Error checking scheduled emails:",
@@ -249,12 +254,12 @@ describe("Cron Scheduler", () => {
       mockedNostrService.sendDeadmanEmailViaNostr.mockResolvedValue(undefined);
 
       // Mock email service
-      mockedSendDeadmanEmail.mockResolvedValue(undefined);
+      mockedSendDeadmanEmail.mockResolvedValue(true);
 
       startCronJobs();
       const inactivityFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[1][1];
-      await inactivityFunction();
+      await (inactivityFunction as any)();
 
       expect(console.log).toHaveBeenCalledWith(
         "🔍 Checking for inactivity-based emails..."
@@ -288,7 +293,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const inactivityFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[1][1];
-      await inactivityFunction();
+      await (inactivityFunction as any)();
 
       // Should not attempt to send email since 5 days < 7 days
       expect(mockedSendDeadmanEmail).not.toHaveBeenCalled();
@@ -301,7 +306,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const inactivityFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[1][1];
-      await inactivityFunction();
+      await (inactivityFunction as any)();
 
       expect(console.error).toHaveBeenCalledWith(
         "❌ Error checking inactivity emails:",
@@ -355,7 +360,7 @@ describe("Cron Scheduler", () => {
         mockEmailContent
       );
       mockedNostrService.sendDeadmanEmailViaNostr.mockResolvedValue(undefined);
-      mockedSendDeadmanEmail.mockResolvedValue(undefined);
+      mockedSendDeadmanEmail.mockResolvedValue(true);
 
       // Call sendEmail through scheduled function
       const mockScheduledEmails = [{ email: mockEmail, user: mockUser }];
@@ -364,7 +369,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(mockedSendDeadmanEmail).toHaveBeenCalledWith(
         "recipient@example.com",
@@ -393,7 +398,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.warn).toHaveBeenCalledWith(
         `No recipients found for email ${mockEmail.id}`
@@ -411,7 +416,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.error).toHaveBeenCalledWith(
         "Failed to send email to recipient:",
@@ -422,7 +427,7 @@ describe("Cron Scheduler", () => {
     it("should handle Nostr retrieval failure gracefully", async () => {
       const nostrError = new Error("Nostr relay unavailable");
       mockedNostrService.retrieveEncryptedEmail.mockRejectedValue(nostrError);
-      mockedSendDeadmanEmail.mockResolvedValue(undefined);
+      mockedSendDeadmanEmail.mockResolvedValue(true);
 
       const mockScheduledEmails = [{ email: mockEmail, user: mockUser }];
       mockDbOperations.where.mockResolvedValueOnce(mockScheduledEmails);
@@ -430,7 +435,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to retrieve email content from Nostr"),
@@ -469,7 +474,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.error).toHaveBeenCalledWith(
         "Failed to send email to recipient:",
@@ -483,7 +488,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const cleanupFunction = (mockedCron.schedule as MockedFunction<any>).mock
         .calls[2][1];
-      await cleanupFunction();
+      await (cleanupFunction as any)();
 
       expect(console.log).toHaveBeenCalledWith(
         "🧹 Cleaning up expired temporary passwords..."
@@ -511,7 +516,7 @@ describe("Cron Scheduler", () => {
       startCronJobs();
       const cleanupFunction = (mockedCron.schedule as MockedFunction<any>).mock
         .calls[2][1];
-      await cleanupFunction();
+      await (cleanupFunction as any)();
 
       expect(console.error).toHaveBeenCalledWith(
         "❌ Error cleaning up expired passwords:",
@@ -578,12 +583,12 @@ describe("Cron Scheduler", () => {
         subject: "Test",
         content: "Content",
       });
-      mockedSendDeadmanEmail.mockResolvedValue(undefined);
+      mockedSendDeadmanEmail.mockResolvedValue(true);
 
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       expect(console.log).toHaveBeenCalledWith(
         "📧 Found 2 scheduled emails to send"
@@ -616,12 +621,12 @@ describe("Cron Scheduler", () => {
         ]);
 
       mockedDecryptData.mockReturnValue("decrypted");
-      mockedSendDeadmanEmail.mockResolvedValue(undefined);
+      mockedSendDeadmanEmail.mockResolvedValue(true);
 
       startCronJobs();
       const scheduledFunction = (mockedCron.schedule as MockedFunction<any>)
         .mock.calls[0][1];
-      await scheduledFunction();
+      await (scheduledFunction as any)();
 
       // First email should warn about no recipients
       expect(console.warn).toHaveBeenCalledWith(

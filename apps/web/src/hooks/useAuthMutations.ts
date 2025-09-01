@@ -12,20 +12,20 @@ export function useAuthMutations() {
   const queryClient = useQueryClient();
 
   // Email authentication request mutation
-  const requestEmailAuth = trpc.auth.requestEmailAuth.useMutation({
-    onSuccess: (data) => {
+  const requestEmailAuth = (trpc as any).auth.requestEmailAuth.useMutation({
+    onSuccess: (data: any) => {
       // Could show success message or update UI
       console.log("Email auth requested successfully:", data);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to request email auth:", error);
       // Error will be handled by the calling component via mutation.error
     },
   });
 
   // Email login mutation
-  const loginWithEmail = trpc.auth.loginWithEmail.useMutation({
-    onSuccess: (data) => {
+  const loginWithEmail = (trpc as any).auth.loginWithEmail.useMutation({
+    onSuccess: (data: any) => {
       // Store auth token and redirect
       if (data.token) {
         localStorage.setItem("auth_token", data.token);
@@ -40,15 +40,15 @@ export function useAuthMutations() {
         router.push("/dashboard");
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Email login failed:", error);
       // Error handling will be done by the calling component
     },
   });
 
   // Nostr login mutation
-  const loginWithNostr = trpc.auth.loginWithNostr.useMutation({
-    onSuccess: (data) => {
+  const loginWithNostr = (trpc as any).auth.loginWithNostr.useMutation({
+    onSuccess: (data: any) => {
       // Store auth token and redirect
       if (data.token) {
         localStorage.setItem("auth_token", data.token);
@@ -63,7 +63,7 @@ export function useAuthMutations() {
         router.push("/dashboard");
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Nostr login failed:", error);
       // Error handling will be done by the calling component
     },

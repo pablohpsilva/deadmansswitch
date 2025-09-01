@@ -17,7 +17,7 @@ export function EmailDetailView({
     data: email,
     isLoading,
     error,
-  } = trpc.emails.getEmail.useQuery({ id: emailId });
+  } = (trpc as any).emails.getEmail.useQuery({ id: emailId });
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -243,7 +243,7 @@ export function EmailDetailView({
                 👥 Recipients
               </h3>
               <div className="space-y-2">
-                {email.recipients.map((recipient, index) => (
+                {email.recipients.map((recipient: any, index: number) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-3">
                     <div className="text-sm">
                       <p className="font-medium text-gray-900">

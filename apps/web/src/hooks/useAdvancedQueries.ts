@@ -8,17 +8,17 @@ import { trpc, trpcClient } from "@/lib/trpc";
 // Parallel queries for dashboard data
 export function useDashboardData() {
   // Use the React hooks instead of the vanilla client for better integration
-  const emailsQuery = trpc.emails.getEmails.useQuery(undefined, {
+  const emailsQuery = (trpc as any).emails.getEmails.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-  const tierQuery = trpc.emails.getTierLimits.useQuery(undefined, {
+  const tierQuery = (trpc as any).emails.getTierLimits.useQuery(undefined, {
     staleTime: 15 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
-  const userQuery = trpc.auth.me.useQuery(undefined, {
+  const userQuery = (trpc as any).auth.me.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
@@ -85,7 +85,7 @@ export function useEmailWithDetails(emailId?: string) {
   // First query: Get email basic info
   const emailQuery = useQuery({
     queryKey: ["emails", emailId],
-    queryFn: () => trpcClient.emails.getEmail.query({ id: emailId! }),
+    queryFn: () => (trpcClient as any).emails.getEmail.query({ id: emailId! }),
     enabled: !!emailId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -127,7 +127,7 @@ export function useInfiniteEmails() {
   // This would require implementing infinite query support in the backend
   const query = useQuery({
     queryKey: ["emails-infinite"],
-    queryFn: () => trpcClient.emails.getEmails.query(),
+    queryFn: () => (trpcClient as any).emails.getEmails.query(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -143,7 +143,7 @@ export function useBackgroundSync() {
   // Keep user auth status fresh
   const userSync = useQuery({
     queryKey: ["background-user-sync"],
-    queryFn: () => trpcClient.auth.me.query(),
+    queryFn: () => (trpcClient as any).auth.me.query(),
     refetchInterval: 5 * 60 * 1000, // Every 5 minutes
     staleTime: 0, // Always consider stale for background sync
     gcTime: 1 * 60 * 1000, // Short cache time
@@ -153,7 +153,7 @@ export function useBackgroundSync() {
   // Background email sync (less frequent)
   const emailSync = useQuery({
     queryKey: ["background-email-sync"],
-    queryFn: () => trpcClient.emails.getEmails.query(),
+    queryFn: () => (trpcClient as any).emails.getEmails.query(),
     refetchInterval: 10 * 60 * 1000, // Every 10 minutes
     staleTime: 0,
     gcTime: 2 * 60 * 1000,

@@ -1,9 +1,15 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/lib/trpc";
-import { db } from "@/db/connection";
-import { deadmanEmails, emailRecipients, users } from "@/db/schema";
-import { eq, and, count } from "drizzle-orm";
+import {
+  db,
+  deadmanEmails,
+  emailRecipients,
+  users,
+  eq,
+  and,
+} from "@deadmansswitch/database";
+import { count } from "drizzle-orm";
 import { encryptData, decryptData } from "@/lib/auth";
 import { nostrService } from "@/services/nostr";
 

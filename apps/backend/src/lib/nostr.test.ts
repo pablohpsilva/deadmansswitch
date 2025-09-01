@@ -73,7 +73,7 @@ describe("Nostr Library", () => {
     });
 
     it("should return false when verification fails", async () => {
-      mockedNostrTools.verifyEvent = vi.fn().mockReturnValue(false);
+      (mockedNostrTools as any).verifyEvent = vi.fn().mockReturnValue(false);
 
       const result = await verifyNostrSignature(
         mockPublicKey,
@@ -85,7 +85,7 @@ describe("Nostr Library", () => {
     });
 
     it("should handle verification errors gracefully", async () => {
-      mockedNostrTools.verifyEvent = vi.fn().mockImplementation(() => {
+      (mockedNostrTools as any).verifyEvent = vi.fn().mockImplementation(() => {
         throw new Error("Verification error");
       });
 
@@ -309,7 +309,9 @@ describe("Nostr Library", () => {
       const signature = "test-signature";
 
       // Mock public key generation
-      mockedNostrTools.getPublicKey = vi.fn().mockReturnValue(publicKey);
+      (mockedNostrTools as any).getPublicKey = vi
+        .fn()
+        .mockReturnValue(publicKey);
 
       // Mock signature verification
       Object.defineProperty(mockedNostrTools, "verifyEvent", {

@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
     // ppr: true,
 
     // Optimize server components
-    serverComponentsExternalPackages: ["@trpc/server"],
 
     // Optimize bundling
     optimizePackageImports: ["@tanstack/react-query", "@trpc/client"],
@@ -129,6 +128,12 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+
+  // External packages for server components
+  serverExternalPackages: [
+    "@deadmansswitch/database",
+    "@deadmansswitch/pricing",
+  ],
 
   // Type checking
   typescript: {

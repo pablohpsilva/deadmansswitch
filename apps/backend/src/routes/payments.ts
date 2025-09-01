@@ -543,20 +543,24 @@ export const paymentsRouter = createTRPCRouter({
       const paymentHash = crypto.randomBytes(32).toString("hex");
       const description = `Dead Man's Switch Premium (1 year) - User ${user.id}`;
 
+      // Get pricing from database
+      const premiumConfig = await getPricingConfig("premium", "lightning");
+      const amount = parseInt(premiumConfig.cryptoAmount || "8910"); // fallback in sats
+
       // Log the pending payment
       await db.insert(auditLogs).values({
         userId: user.id,
         action: "lightning_invoice_created",
         details: JSON.stringify({
           tier: "premium",
-          amount: PRICING.premium.yearly.lightning,
+          amount,
           paymentHash,
           description,
         }),
       });
 
       return {
-        amount: PRICING.premium.yearly.lightning,
+        amount,
         description,
         paymentHash,
         memo: "Dead Man's Switch Premium Subscription",
@@ -590,20 +594,24 @@ export const paymentsRouter = createTRPCRouter({
       const paymentHash = crypto.randomBytes(32).toString("hex");
       const description = `Dead Man's Switch Lifetime - User ${user.id}`;
 
+      // Get pricing from database
+      const lifetimeConfig = await getPricingConfig("lifetime", "lightning");
+      const amount = parseInt(lifetimeConfig.cryptoAmount || "44910"); // fallback in sats
+
       // Log the pending payment
       await db.insert(auditLogs).values({
         userId: user.id,
         action: "lightning_invoice_created",
         details: JSON.stringify({
           tier: "lifetime",
-          amount: PRICING.lifetime.onetime.lightning,
+          amount,
           paymentHash,
           description,
         }),
       });
 
       return {
-        amount: PRICING.lifetime.onetime.lightning,
+        amount,
         description,
         paymentHash,
         memo: "Dead Man's Switch Lifetime Access",
@@ -1060,7 +1068,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const userId = invoice.customer_details?.metadata?.userId;
+  const userId = (invoice as any).customer_details?.metadata?.userId;
   if (!userId) return;
 
   await db.insert(auditLogs).values({
@@ -1075,7 +1083,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const userId = invoice.customer_details?.metadata?.userId;
+  const userId = (invoice as any).customer_details?.metadata?.userId;
   if (!userId) return;
 
   await db.insert(auditLogs).values({

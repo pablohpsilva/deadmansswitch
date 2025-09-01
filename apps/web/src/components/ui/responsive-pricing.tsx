@@ -329,8 +329,8 @@ export function ResponsivePricing({
             {pricing.premium.paymentMethods &&
               pricing.lifetime.paymentMethods && (
                 <PricingWizard
-                  premiumData={pricing.premium}
-                  lifetimeData={pricing.lifetime}
+                  premiumData={pricing.premium as any}
+                  lifetimeData={pricing.lifetime as any}
                   onComplete={handleUpgrade}
                   isLoading={isLoading !== null}
                 />
@@ -349,8 +349,8 @@ export function ResponsivePricing({
         <div className="animate-in slide-in-from-right-4 duration-300">
           <PurchaseView
             selectedTier={selectedPlan}
-            pricingData={pricing[selectedPlan]}
-            allPlans={pricing}
+            pricingData={pricing[selectedPlan] as any}
+            allPlans={pricing as any}
             onBack={handleBackToPlans}
             onComplete={(method, details) =>
               handleUpgrade(selectedPlan, method, details)

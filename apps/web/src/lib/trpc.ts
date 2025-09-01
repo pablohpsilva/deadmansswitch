@@ -3,7 +3,7 @@ import { createTRPCClient, httpLink } from "@trpc/client";
 // Import shared types from packages
 import type { AppRouter } from "../../../../packages/shared-types";
 
-export const trpc = createTRPCReact<AppRouter>();
+export const trpc = createTRPCReact() as any;
 
 export function getBaseUrl() {
   // Always call the backend directly
@@ -19,7 +19,7 @@ export function getBaseUrl() {
   return process.env.BACKEND_URL || "http://localhost:3001";
 }
 
-export const trpcClient = createTRPCClient<AppRouter>({
+export const trpcClient = createTRPCClient({
   links: [
     httpLink({
       url: `${getBaseUrl()}/trpc`,

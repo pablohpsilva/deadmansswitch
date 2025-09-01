@@ -416,7 +416,7 @@ describe("Auth Library", () => {
     });
 
     it("should generate unique temp passwords for different calls", () => {
-      mockedCrypto.randomBytes
+      (mockedCrypto.randomBytes as any)
         .mockReturnValueOnce(Buffer.from("unique1"))
         .mockReturnValueOnce(Buffer.from("unique2"));
 
@@ -436,10 +436,10 @@ describe("Auth Library", () => {
       };
 
       // Mock token generation
-      mockedJwt.sign.mockReturnValue("generated.token.here");
+      (mockedJwt.sign as any).mockReturnValue("generated.token.here");
 
       // Mock token verification
-      mockedJwt.verify.mockReturnValue(payload);
+      (mockedJwt.verify as any).mockReturnValue(payload);
 
       const token = generateToken(payload);
       const verifiedPayload = await verifyToken(token);
