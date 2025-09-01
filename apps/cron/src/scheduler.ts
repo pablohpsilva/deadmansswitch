@@ -1,4 +1,3 @@
-import * as cron from "node-cron";
 import {
   db,
   users,
@@ -9,32 +8,16 @@ import {
   and,
 } from "@deadmansswitch/database";
 import { lt, lte, isNull, isNotNull } from "drizzle-orm";
-import { sendDeadmanEmail } from "../services/email";
-import { nostrService } from "../services/nostr";
-import { decryptData } from "../lib/auth";
+import { sendDeadmanEmail } from "./services/email.js";
+import { nostrService } from "./services/nostr.js";
+import { decryptData } from "./lib/auth.js";
 
-export function startCronJobs() {
-  console.log("🕐 Starting cron jobs...");
+// Export the individual cron job functions
+export const scheduledFunction = checkAndSendScheduledEmails;
+export const inactivityFunction = checkInactivityEmails;
+export const cleanupFunction = cleanupExpiredPasswords;
 
-  // Check for emails to send every hour
-  cron.schedule("0 * * * *", async () => {
-    await checkAndSendScheduledEmails();
-  });
-
-  // Check for inactivity-based emails every 6 hours
-  cron.schedule("0 */6 * * *", async () => {
-    await checkInactivityEmails();
-  });
-
-  // Clean up expired temp passwords daily
-  cron.schedule("0 2 * * *", async () => {
-    await cleanupExpiredPasswords();
-  });
-
-  console.log("✅ Cron jobs started successfully");
-}
-
-async function checkAndSendScheduledEmails() {
+export async function checkAndSendScheduledEmails() {
   console.log("🔍 Checking for scheduled emails to send...");
 
   try {
@@ -69,7 +52,7 @@ async function checkAndSendScheduledEmails() {
   }
 }
 
-async function checkInactivityEmails() {
+export async function checkInactivityEmails() {
   console.log("🔍 Checking for inactivity-based emails...");
 
   try {
@@ -249,7 +232,7 @@ async function sendEmail(
   }
 }
 
-async function cleanupExpiredPasswords() {
+export async function cleanupExpiredPasswords() {
   console.log("🧹 Cleaning up expired temporary passwords...");
 
   try {

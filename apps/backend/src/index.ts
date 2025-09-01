@@ -4,7 +4,7 @@ import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "@/routes/router";
 import { createContext } from "@/lib/context";
-import { startCronJobs } from "@/cron/scheduler";
+// Note: Cron jobs are now handled by the separate cron app
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -43,8 +43,8 @@ console.log(
   createContext.toString().substring(0, 100)
 );
 
-// Start cron jobs
-startCronJobs();
+// Cron jobs are now handled by the separate cron app
+console.log("📝 Note: Cron jobs are now handled by the separate cron app");
 
 serve({
   fetch: app.fetch,

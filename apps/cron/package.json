@@ -1,0 +1,31 @@
+{
+  "name": "cron",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deadmansswitch/database": "workspace:*",
+    "@deadmansswitch/pricing": "workspace:*",
+    "@noble/hashes": "^1.5.0",
+    "drizzle-orm": "^0.33.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.16",
+    "nostr-tools": "^2.10.2",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.11",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^6.4.19",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
