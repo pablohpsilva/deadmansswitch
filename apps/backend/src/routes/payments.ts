@@ -1,15 +1,17 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/lib/trpc";
-import { db } from "@/db/connection";
 import {
+  db,
   users,
   auditLogs,
   pricingTiers,
   paymentMethods,
   pricingConfigurations,
-} from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+  eq,
+  and,
+} from "@deadmansswitch/database";
+import { generateTierFeatures } from "@deadmansswitch/pricing";
 import Stripe from "stripe";
 import crypto from "crypto";
 
@@ -21,49 +23,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export type PaymentMethod = "lightning" | "stablecoin" | "stripe";
 
 // Helper function to generate dynamic features based on tier limits
-function generateTierFeatures(tier: any): string[] {
-  const features = [];
-
-  if (tier.name === "free") {
-    features.push(
-      `Up to ${tier.maxEmails} emails`,
-      `${tier.maxRecipients} recipients per email`,
-      `${tier.maxSubjectLength} character subject line`,
-      `${tier.maxContentLength.toLocaleString()} character content`,
-      "Basic scheduling",
-      "Nostr encryption",
-      "Single relay storage (basic)"
-    );
-  } else if (tier.name === "premium") {
-    features.push(
-      `Up to ${tier.maxEmails} emails`,
-      `${tier.maxRecipients} recipients per email`,
-      `${tier.maxSubjectLength} character subject line`,
-      `${tier.maxContentLength.toLocaleString()} character content`,
-      "Advanced scheduling",
-      "Nostr encryption",
-      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
-      "Enhanced decentralization",
-      "10% off with Bitcoin Lightning",
-      "7% off with stablecoins",
-      "Priority support"
-    );
-  } else if (tier.name === "lifetime") {
-    features.push(
-      `Up to ${tier.maxEmails} emails`,
-      `${tier.maxRecipients} recipients per email`,
-      "One-time payment",
-      "Lifetime updates",
-      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
-      "Optimized decentralization",
-      "10% off with Bitcoin Lightning",
-      "7% off with stablecoins",
-      "Priority support"
-    );
-  }
-
-  return features;
-}
 
 // Helper function to get pricing from database
 async function getPricingFromDatabase() {

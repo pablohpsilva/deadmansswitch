@@ -1,0 +1,18 @@
+{
+  "name": "@deadmansswitch/pricing",
+  "version": "1.0.0",
+  "description": "Shared pricing package for Dead Man's Switch",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@deadmansswitch/database": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.4.2"
+  }
+}

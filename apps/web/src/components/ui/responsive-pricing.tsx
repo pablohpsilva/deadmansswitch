@@ -140,7 +140,7 @@ export function ResponsivePricing({
                   Perfect for getting started
                 </p>
                 <div className="text-xs text-gray-600">
-                  {pricing.free.features.slice(0, 3).map((feature, idx) => (
+                  {pricing.free.features.map((feature, idx) => (
                     <div key={idx}>• {feature}</div>
                   ))}
                 </div>
@@ -195,7 +195,7 @@ export function ResponsivePricing({
                 <p className="text-sm text-gray-600 mb-3">For serious users</p>
 
                 <div className="text-xs text-gray-600 mb-3">
-                  {pricing.premium.features.slice(0, 3).map((feature, idx) => (
+                  {pricing.premium.features.map((feature, idx) => (
                     <div key={idx}>• {feature}</div>
                   ))}
                 </div>
@@ -270,7 +270,7 @@ export function ResponsivePricing({
                 </p>
 
                 <div className="text-xs text-gray-600 mb-3">
-                  {pricing.lifetime.features.slice(0, 3).map((feature, idx) => (
+                  {pricing.lifetime.features.map((feature, idx) => (
                     <div key={idx}>• {feature}</div>
                   ))}
                 </div>
@@ -391,7 +391,7 @@ export function ResponsivePricing({
                   period="/year"
                   description="For serious users"
                   features={[
-                    ...pricing.premium.features.slice(0, 6),
+                    ...pricing.premium.features,
                     "💰 Up to 10% off with crypto payments",
                   ]}
                   buttonText={
@@ -420,7 +420,7 @@ export function ResponsivePricing({
                 period="one-time"
                 description="Pay once, use forever"
                 features={[
-                  ...pricing.lifetime.features.slice(0, 6),
+                  ...pricing.lifetime.features,
                   "💰 Up to 10% off with crypto payments",
                 ]}
                 buttonText={

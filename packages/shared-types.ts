@@ -32,8 +32,11 @@ export interface AppRouter {
   };
   payments: {
     getSubscription: any;
+    getPricing: any;
     createPremiumCheckout: any;
     createLifetimeCheckout: any;
+    createLightningCheckout: any;
+    createStablecoinCheckout: any;
     cancelSubscription: any;
     reactivateSubscription: any;
     handleStripeWebhook: any;

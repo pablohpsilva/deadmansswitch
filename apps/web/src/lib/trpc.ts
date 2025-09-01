@@ -6,16 +6,23 @@ import type { AppRouter } from "../../../../packages/shared-types";
 export const trpc = createTRPCReact<AppRouter>();
 
 export function getBaseUrl() {
-  if (typeof window !== "undefined") return ""; // Browser should use relative URL (will hit Next.js API routes)
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  // For SSR, use the Next.js server (port 3000) which will proxy to backend
-  return `http://localhost:3000`;
+  // Always call the backend directly
+  if (typeof window !== "undefined") {
+    // Browser: use env var or default to localhost:3001
+    return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  }
+  if (process.env.VERCEL_URL) {
+    // Production: use backend URL from env
+    return process.env.BACKEND_URL || `https://${process.env.VERCEL_URL}`;
+  }
+  // SSR during development: call backend directly
+  return process.env.BACKEND_URL || "http://localhost:3001";
 }
 
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpLink({
-      url: `${getBaseUrl()}/api/trpc`,
+      url: `${getBaseUrl()}/trpc`,
       headers() {
         const token =
           typeof window !== "undefined"

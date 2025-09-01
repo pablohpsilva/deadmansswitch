@@ -3,9 +3,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LandingPageClient } from "./landing-page-client";
 import { Navbar } from "@/components/ui/navbar";
-import { db } from "../../../../../apps/backend/src/db/connection";
-import { pricingTiers } from "../../../../../apps/backend/src/db/schema";
-import { eq } from "drizzle-orm";
 
 // Server Component for static content and initial SEO
 async function getAppStats() {
@@ -19,111 +16,61 @@ async function getAppStats() {
   };
 }
 
-// Helper function to generate dynamic features based on tier limits (same as backend)
-function generateTierFeatures(tier: any): string[] {
-  const features = [];
-
-  if (tier.name === "free") {
-    features.push(
-      `Up to ${tier.maxEmails} emails`,
-      `${tier.maxRecipients} recipients per email`,
-      `${tier.maxSubjectLength} character subject line`,
-      `${tier.maxContentLength.toLocaleString()} character content`,
-      "Basic scheduling",
-      "Nostr encryption",
-      "Single relay storage (basic)"
-    );
-  } else if (tier.name === "premium") {
-    features.push(
-      `Up to ${tier.maxEmails} emails`,
-      `${tier.maxRecipients} recipients per email`,
-      `${tier.maxSubjectLength} character subject line`,
-      `${tier.maxContentLength.toLocaleString()} character content`,
-      "Advanced scheduling",
-      "Nostr encryption",
-      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
-      "Enhanced decentralization",
-      "10% off with Bitcoin Lightning",
-      "7% off with stablecoins",
-      "Priority support"
-    );
-  } else if (tier.name === "lifetime") {
-    features.push(
-      `Up to ${tier.maxEmails} emails`,
-      `${tier.maxRecipients} recipients per email`,
-      "One-time payment",
-      "Lifetime updates",
-      `Multi-relay storage (up to ${tier.maxRelays} relays)`,
-      "Optimized decentralization",
-      "10% off with Bitcoin Lightning",
-      "7% off with stablecoins",
-      "Priority support"
-    );
-  }
-
-  return features;
-}
-
-// Server-side function to get pricing data from database
-async function getPricingData() {
-  try {
-    const tiers = await db
-      .select()
-      .from(pricingTiers)
-      .where(eq(pricingTiers.isActive, true))
-      .orderBy(pricingTiers.sortOrder);
-
-    const pricingData: any = {};
-
-    for (const tier of tiers) {
-      pricingData[tier.name] = {
-        name: tier.displayName,
-        maxEmails: tier.maxEmails,
-        maxRecipients: tier.maxRecipients,
-        maxSubjectLength: tier.maxSubjectLength,
-        maxContentLength: tier.maxContentLength,
-        maxRelays: tier.maxRelays,
-        features: generateTierFeatures(tier),
-      };
-    }
-
-    return pricingData;
-  } catch (error) {
-    console.error("Error fetching pricing data:", error);
-    // Fallback to basic structure if database fails
-    return {
-      free: {
-        name: "Free",
-        features: [
-          "2 emails maximum",
-          "2 recipients per email",
-          "Basic features",
-        ],
-      },
-      premium: {
-        name: "Premium",
-        features: [
-          "100 emails maximum",
-          "10 recipients per email",
-          "Advanced features",
-        ],
-      },
-      lifetime: {
-        name: "Lifetime",
-        features: [
-          "50 emails maximum",
-          "10 recipients per email",
-          "Lifetime access",
-        ],
-      },
-    };
-  }
+// Static pricing data for SEO and initial render
+// TODO: Replace with API call to backend for dynamic data
+async function getStaticPricingData() {
+  // This data should match your database values
+  // In production, this would come from an API call
+  return {
+    free: {
+      name: "Free",
+      features: [
+        "Up to 2 emails",
+        "2 recipients per email",
+        "125 character subject line",
+        "2,000 character content",
+        "Basic scheduling",
+        "Nostr encryption",
+        "Single relay storage (basic)",
+      ],
+    },
+    premium: {
+      name: "Premium",
+      features: [
+        "Up to 100 emails",
+        "10 recipients per email",
+        "300 character subject line",
+        "10,000 character content",
+        "Advanced scheduling",
+        "Nostr encryption",
+        "Multi-relay storage (up to 10 relays)",
+        "Enhanced decentralization",
+        "10% off with Bitcoin Lightning",
+        "7% off with stablecoins",
+        "Priority support",
+      ],
+    },
+    lifetime: {
+      name: "Lifetime",
+      features: [
+        "Up to 50 emails",
+        "10 recipients per email",
+        "One-time payment",
+        "Lifetime updates",
+        "Multi-relay storage (up to 3 relays)",
+        "Optimized decentralization",
+        "10% off with Bitcoin Lightning",
+        "7% off with stablecoins",
+        "Priority support",
+      ],
+    },
+  };
 }
 
 export async function LandingPageServer() {
   // Fetch data on the server for initial render
   const appStats = await getAppStats();
-  const pricingData = await getPricingData();
+  const pricingData = await getStaticPricingData();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">

@@ -178,7 +178,7 @@ export function PurchaseView({
                 What's included:
               </h3>
               <ul className="space-y-2">
-                {pricingData.features.slice(0, 6).map((feature, index) => (
+                {pricingData.features.map((feature, index) => (
                   <li key={index} className="flex items-start text-sm">
                     <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
                     <span className="text-gray-700">{feature}</span>
