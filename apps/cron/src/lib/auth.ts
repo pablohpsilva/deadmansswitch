@@ -1,21 +1,22 @@
 import * as crypto from "crypto";
 
-export function encryptData(
-  data: string,
-  key: string = process.env.ENCRYPTION_KEY || "default-key"
-): string {
-  const cipher = crypto.createCipher("aes-256-cbc", key);
-  let encrypted = cipher.update(data, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  return encrypted;
-}
-
 export function decryptData(
   encryptedData: string,
   key: string = process.env.ENCRYPTION_KEY || "default-key"
 ): string {
-  const decipher = crypto.createDecipher("aes-256-cbc", key);
-  let decrypted = decipher.update(encryptedData, "hex", "utf8");
+  const parts = encryptedData.split(":");
+  if (parts.length !== 2) {
+    throw new Error("Invalid encrypted data format");
+  }
+
+  const iv = Buffer.from(parts[0], "hex");
+  const encrypted = parts[1];
+
+  // Create a 32-byte key from the provided key
+  const keyBuffer = crypto.createHash("sha256").update(key).digest();
+
+  const decipher = crypto.createDecipheriv("aes-256-cbc", keyBuffer, iv);
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
 }
