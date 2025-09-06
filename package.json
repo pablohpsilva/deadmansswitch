@@ -10,6 +10,7 @@
     "dev:backend": "turbo dev --filter=backend...",
     "dev:email": "turbo dev --filter=email...",
     "dev:db": "turbo dev --filter=db...",
+    "db:studio": "cd apps/backend && npx drizzle-kit studio",
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "turbo format",

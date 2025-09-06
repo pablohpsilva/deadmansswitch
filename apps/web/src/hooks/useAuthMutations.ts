@@ -23,8 +23,35 @@ export function useAuthMutations() {
     },
   });
 
-  // Email login mutation
-  const loginWithEmail = (trpc as any).auth.loginWithEmail.useMutation({
+  // Email OTP verification mutation
+  const verifyEmailOTP = (trpc as any).auth.verifyEmailOTP.useMutation({
+    onSuccess: (data: any) => {
+      // Only redirect if we have a token (new users)
+      // Existing users need to connect Nostr first
+      if (data.token && !data.requiresNostrConnection) {
+        localStorage.setItem("auth_token", data.token);
+
+        // Prefetch dashboard data for faster navigation
+        queryClient.prefetchQuery({
+          queryKey: ["emails"],
+          staleTime: 5 * 60 * 1000,
+        });
+
+        // Redirect to dashboard
+        router.push("/dashboard");
+      }
+      // If requiresNostrConnection is true, the component will handle the next step
+    },
+    onError: (error: any) => {
+      console.error("Email OTP verification failed:", error);
+      // Error handling will be done by the calling component
+    },
+  });
+
+  // Complete Nostr registration mutation
+  const completeNostrRegistration = (
+    trpc as any
+  ).auth.completeNostrRegistration.useMutation({
     onSuccess: (data: any) => {
       // Store auth token and redirect
       if (data.token) {
@@ -41,7 +68,7 @@ export function useAuthMutations() {
       }
     },
     onError: (error: any) => {
-      console.error("Email login failed:", error);
+      console.error("Nostr registration failed:", error);
       // Error handling will be done by the calling component
     },
   });
@@ -49,8 +76,8 @@ export function useAuthMutations() {
   // Nostr login mutation
   const loginWithNostr = (trpc as any).auth.loginWithNostr.useMutation({
     onSuccess: (data: any) => {
-      // Store auth token and redirect
-      if (data.token) {
+      // Store auth token and redirect (only if user exists)
+      if (data.token && data.userExists) {
         localStorage.setItem("auth_token", data.token);
 
         // Prefetch dashboard data for faster navigation
@@ -62,6 +89,7 @@ export function useAuthMutations() {
         // Redirect to dashboard
         router.push("/dashboard");
       }
+      // If user doesn't exist, the component will handle the email flow
     },
     onError: (error: any) => {
       console.error("Nostr login failed:", error);
@@ -91,14 +119,16 @@ export function useAuthMutations() {
 
   return {
     requestEmailAuth,
-    loginWithEmail,
+    verifyEmailOTP,
+    completeNostrRegistration,
     loginWithNostr,
     logout,
     checkAuthStatus,
     // Utility properties
     isAuthenticating:
       requestEmailAuth.isPending ||
-      loginWithEmail.isPending ||
+      verifyEmailOTP.isPending ||
+      completeNostrRegistration.isPending ||
       loginWithNostr.isPending,
   };
 }

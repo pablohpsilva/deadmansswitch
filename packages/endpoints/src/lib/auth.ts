@@ -28,55 +28,51 @@ export async function verifyToken(token: string): Promise<TokenPayload> {
   }
 }
 
+// DEPRECATED: generateNostrKeypair
+// Nostr keys should NEVER be generated on the server for security reasons.
+// All key generation must happen client-side to ensure private keys never leave the user's device.
 export async function generateNostrKeypair() {
-  try {
-    // Dynamic import for nostr-tools since it might not be available in all environments
-    const nostrTools = await import("nostr-tools");
-
-    if (nostrTools.generateSecretKey && nostrTools.getPublicKey) {
-      // Use new API (v2.x)
-      const privateKey = nostrTools.generateSecretKey();
-      const publicKey = nostrTools.getPublicKey(privateKey);
-
-      return {
-        privateKey: Buffer.from(privateKey).toString("hex"),
-        publicKey,
-      };
-    } else {
-      // Fallback using crypto
-      const privateKeyBytes = crypto.randomBytes(32);
-      return {
-        privateKey: privateKeyBytes.toString("hex"),
-        publicKey: "fallback_" + crypto.randomBytes(16).toString("hex"),
-      };
-    }
-  } catch (error) {
-    console.error("Failed to generate Nostr keypair:", error);
-    // Fallback
-    const privateKeyBytes = crypto.randomBytes(32);
-    return {
-      privateKey: privateKeyBytes.toString("hex"),
-      publicKey: "fallback_" + crypto.randomBytes(16).toString("hex"),
-    };
-  }
+  throw new Error(
+    "Server-side Nostr key generation is deprecated for security reasons. " +
+      "Keys must be generated client-side using nostr-tools in the browser."
+  );
 }
 
 export function encryptData(
   data: string,
   key: string = process.env.ENCRYPTION_KEY || "default-key"
 ): string {
-  const cipher = crypto.createCipher("aes-256-cbc", key);
+  // Generate a random initialization vector
+  const iv = crypto.randomBytes(16);
+
+  // Create a 32-byte key from the provided key
+  const keyBuffer = crypto.createHash("sha256").update(key).digest();
+
+  const cipher = crypto.createCipheriv("aes-256-cbc", keyBuffer, iv);
   let encrypted = cipher.update(data, "utf8", "hex");
   encrypted += cipher.final("hex");
-  return encrypted;
+
+  // Prepend IV to the encrypted data
+  return iv.toString("hex") + ":" + encrypted;
 }
 
 export function decryptData(
   encryptedData: string,
   key: string = process.env.ENCRYPTION_KEY || "default-key"
 ): string {
-  const decipher = crypto.createDecipher("aes-256-cbc", key);
-  let decrypted = decipher.update(encryptedData, "hex", "utf8");
+  const parts = encryptedData.split(":");
+  if (parts.length !== 2) {
+    throw new Error("Invalid encrypted data format");
+  }
+
+  const iv = Buffer.from(parts[0], "hex");
+  const encrypted = parts[1];
+
+  // Create a 32-byte key from the provided key
+  const keyBuffer = crypto.createHash("sha256").update(key).digest();
+
+  const decipher = crypto.createDecipheriv("aes-256-cbc", keyBuffer, iv);
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
 }

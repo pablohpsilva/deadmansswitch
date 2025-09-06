@@ -72,6 +72,8 @@ export class NostrService {
   }
 
   // Store pre-encrypted email data in Nostr (data already encrypted on client-side)
+  // NOTE: This method is now deprecated as per security requirements
+  // Events must be signed client-side and submitted directly to relays
   async storePreEncryptedEmail(
     userId: string,
     encryptedData: {
@@ -82,98 +84,15 @@ export class NostrService {
       publicKey: string;
     }
   ): Promise<string> {
-    try {
-      const relays = await this.getUserRelays(userId);
-      const relayList = relays.length > 0 ? relays : this.getDefaultRelays();
-
-      // Get user's private key for signing the event
-      const [user] = await (
-        await import("@deadmansswitch/database")
-      ).db
-        .select()
-        .from((await import("@deadmansswitch/database")).users)
-        .where(
-          (
-            await import("@deadmansswitch/database")
-          ).eq((await import("@deadmansswitch/database")).users.id, userId)
-        );
-
-      if (!user?.nostrPrivateKey) {
-        throw new Error("No Nostr keys found for user");
-      }
-
-      const privateKey = (await import("../lib/auth")).decryptData(
-        user.nostrPrivateKey
-      );
-
-      // Create event with pre-encrypted data
-      const eventTemplate: UnsignedNostrEvent = {
-        pubkey: nostrTools.getPublicKey(privateKey as any),
-        created_at: Math.floor(Date.now() / 1000),
-        kind: 30078, // Parameterized replaceable event for app-specific data
-        tags: [
-          ["d", "deadman_email"], // Identifier for dead man's switch emails
-          ["client_encrypted", "true"], // Mark as client-side encrypted
-          ["encryption_method", encryptedData.encryptionMethod],
-          ["encrypted_by_pubkey", encryptedData.publicKey],
-        ],
-        content: JSON.stringify({
-          type: "deadman_email_encrypted",
-          encryptedSubject: encryptedData.encryptedSubject,
-          encryptedContent: encryptedData.encryptedContent,
-          encryptedRecipients: encryptedData.encryptedRecipients,
-          timestamp: Date.now(),
-        }),
-      };
-
-      const signedEvent = nostrTools.finalizeEvent(
-        eventTemplate,
-        privateKey as any
-      );
-      await this.pool.publish(relayList, signedEvent);
-
-      return signedEvent.id;
-    } catch (error) {
-      console.error("Failed to store pre-encrypted email in Nostr:", error);
-      throw error;
-    }
+    throw new Error(
+      "Server-side event signing is disabled per security requirements. " +
+        "Events must be signed client-side with user's private key."
+    );
   }
 
-  // Store encrypted email data in Nostr (legacy method - will encrypt on server)
-  async storeEncryptedEmail(
-    userId: string,
-    emailData: {
-      subject: string;
-      content: string;
-      recipients: string[];
-    },
-    senderPrivkey: string
-  ): Promise<string> {
-    try {
-      const relays = await this.getUserRelays(userId);
-      const relayList = relays.length > 0 ? relays : this.getDefaultRelays();
-
-      // Create event
-      const eventTemplate: UnsignedNostrEvent = {
-        pubkey: nostrTools.getPublicKey(senderPrivkey as any),
-        created_at: Math.floor(Date.now() / 1000),
-        kind: 1, // Text note
-        tags: [],
-        content: JSON.stringify(emailData),
-      };
-
-      const signedEvent = nostrTools.finalizeEvent(
-        eventTemplate,
-        senderPrivkey as any
-      );
-      await this.pool.publish(relayList, signedEvent);
-
-      return signedEvent.id;
-    } catch (error) {
-      console.error("Failed to store email in Nostr:", error);
-      throw error;
-    }
-  }
+  // REMOVED: storeEncryptedEmail method
+  // Server-side encryption and signing violates security principles.
+  // All encryption and event signing must happen client-side.
 
   // Retrieve raw event data from Nostr (for client-side decryption)
   async retrieveRawEvent(
@@ -205,49 +124,9 @@ export class NostrService {
     }
   }
 
-  // Retrieve encrypted email from Nostr (legacy method - server-side decryption)
-  async retrieveEncryptedEmail(
-    eventId: string,
-    privateKey: string,
-    relays?: string[]
-  ): Promise<{ subject: string; content: string } | null> {
-    try {
-      const relayList = relays || this.getDefaultRelays();
-
-      const filter = {
-        ids: [eventId],
-        kinds: [1], // Text note
-      };
-
-      const event = await this.pool.get(relayList, filter);
-
-      if (!event) {
-        console.warn(`No event found with ID: ${eventId}`);
-        return null;
-      }
-
-      // Parse the content
-      try {
-        const emailData = JSON.parse(event.content);
-        return {
-          subject: emailData.subject || "Dead Man's Switch Notification",
-          content: emailData.content || event.content,
-        };
-      } catch (error) {
-        console.warn(
-          "Failed to parse content as JSON, using as plain text:",
-          error
-        );
-        return {
-          subject: "Dead Man's Switch Notification",
-          content: event.content,
-        };
-      }
-    } catch (error) {
-      console.error("Failed to retrieve email from Nostr:", error);
-      return null;
-    }
-  }
+  // REMOVED: retrieveEncryptedEmail method
+  // Server-side decryption violates security principles.
+  // Use retrieveRawEvent() instead and decrypt on client-side.
 
   // Close connections
   close(relays?: string[]) {

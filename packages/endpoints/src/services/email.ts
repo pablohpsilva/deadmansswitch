@@ -26,14 +26,14 @@ export async function sendTempPasswordEmail(
         <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
           <code style="font-size: 18px; font-weight: bold;">${tempPassword}</code>
         </div>
-        <p>This password will expire in 15 minutes for security reasons.</p>
+        <p>This password will expire in 24 hours for security reasons.</p>
         <p>If you didn't request this, please ignore this email.</p>
       </div>
     `,
     text: `
 Your temporary password for Dead Man's Switch: ${tempPassword}
 
-This password will expire in 15 minutes for security reasons.
+This password will expire in 24 hours for security reasons.
 If you didn't request this, please ignore this email.
 `,
   };

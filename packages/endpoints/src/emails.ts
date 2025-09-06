@@ -12,6 +12,7 @@ import {
 import { count } from "drizzle-orm";
 import { encryptData, decryptData } from "@/lib/auth";
 import { nostrService } from "@/services/nostr";
+import crypto from "crypto";
 
 // Tier limits
 const TIER_LIMITS = {
@@ -170,6 +171,7 @@ export const emailsRouter = createTRPCRouter({
           .min(1, "At least one recipient is required"),
         scheduledFor: z.date().optional(),
         intervalDays: z.number().int().positive().optional(),
+        nostrEventId: z.string().optional(), // Event ID from client-side Nostr submission
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -183,6 +185,7 @@ export const emailsRouter = createTRPCRouter({
         recipientCount,
         scheduledFor,
         intervalDays,
+        nostrEventId,
       } = input;
 
       const limits = TIER_LIMITS[ctx.user.tier];
@@ -223,18 +226,15 @@ export const emailsRouter = createTRPCRouter({
       }
 
       try {
-        // Store pre-encrypted email data in Nostr
-        // Data is already encrypted on the client-side, so we just need to store it
-        const nostrEventId = await nostrService.storePreEncryptedEmail(
-          ctx.user.userId,
-          {
-            encryptedSubject,
-            encryptedContent,
-            encryptedRecipients,
-            encryptionMethod,
-            publicKey,
-          }
-        );
+        // NOTE: Nostr event creation and submission is now handled client-side
+        // The client should create and submit the encrypted event directly to relays
+        // and pass the event ID to this endpoint via the `nostrEventId` input parameter
+
+        // For now, we'll accept the nostrEventId from the client
+        // In the future, this should be a required field from client-side event submission
+        const eventId =
+          nostrEventId ||
+          `temp_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
 
         // Create email record
         const [newEmail] = await db
@@ -245,7 +245,7 @@ export const emailsRouter = createTRPCRouter({
             recipientCount: recipientCount,
             scheduledFor,
             intervalDays,
-            nostrEventId,
+            nostrEventId: eventId,
             isActive: true,
           })
           .returning();
@@ -352,44 +352,14 @@ export const emailsRouter = createTRPCRouter({
       }
 
       try {
-        // If content or recipients are being updated, update Nostr as well
-        if ((subject || content || recipients) && existingEmail.nostrEventId) {
-          const [user] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, ctx.user.userId));
-
-          if (user?.nostrPrivateKey) {
-            const privateKey = decryptData(user.nostrPrivateKey);
-
-            // Get current data first
-            const userRelays = await nostrService.getUserRelays(
-              ctx.user.userId
-            );
-            const currentData = await nostrService.retrieveEncryptedEmail(
-              existingEmail.nostrEventId,
-              privateKey,
-              userRelays.length > 0 ? userRelays : undefined
-            );
-
-            // Update with new data
-            const updatedData = {
-              subject: subject || currentData?.subject || "",
-              content: content || currentData?.content || "",
-              recipients: recipients?.map((r) => r.email) || [] || [],
-            };
-
-            // Store updated data in Nostr
-            const newNostrEventId = await nostrService.storeEncryptedEmail(
-              ctx.user.userId,
-              updatedData,
-              privateKey
-            );
-
-            // Update the nostrEventId in database
-            existingEmail.nostrEventId = newNostrEventId;
-          }
-        }
+        // NOTE: Nostr event updates must now be handled client-side
+        // The client should:
+        // 1. Retrieve the current encrypted event using retrieveRawEvent()
+        // 2. Decrypt it client-side
+        // 3. Update the content
+        // 4. Re-encrypt and sign a new event client-side
+        // 5. Submit to relays
+        // 6. Pass the new event ID to this endpoint
 
         // Update email record
         const updateData: Partial<typeof deadmanEmails.$inferInsert> = {

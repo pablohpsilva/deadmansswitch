@@ -9,7 +9,6 @@ import { db, users, eq } from "@deadmansswitch/database";
 import {
   generateTempPassword,
   generateToken,
-  generateNostrKeypair,
   encryptData,
   decryptData,
 } from "@/lib/auth";
@@ -29,46 +28,48 @@ export const authRouter = createTRPCRouter({
       const { email } = input;
 
       try {
-        // Check if user exists, create if not
-        let [user] = await db
+        // Check if user exists
+        const [existingUser] = await db
           .select()
           .from(users)
           .where(eq(users.email, email));
 
-        if (!user) {
-          // Create new user with Nostr keypair (email auth users get generated keys)
-          const keypair = await generateNostrKeypair();
-
-          [user] = await db
-            .insert(users)
-            .values({
-              email,
-              authType: "email", // Email-authenticated users get generated keys
-              nostrPrivateKey: encryptData(keypair.privateKey), // Encrypted storage for email users
-              nostrPublicKey: keypair.publicKey,
-              tier: "free",
-            })
-            .returning();
-        }
+        const userExists = !!existingUser;
 
         // Generate temporary password
         const tempPassword = generateTempPassword();
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-        // Update user with temp password
-        await db
-          .update(users)
-          .set({
+        if (userExists) {
+          // Update existing user with temp password
+          await db
+            .update(users)
+            .set({
+              tempPassword,
+              tempPasswordExpires: expiresAt,
+            })
+            .where(eq(users.id, existingUser.id));
+        } else {
+          // For new users, we'll store the temp password temporarily
+          // User will be created after OTP verification
+          // Store in a temporary way (we'll create user in verifyEmailOTP)
+          // For now, create a temporary record
+          await db.insert(users).values({
+            email,
             tempPassword,
             tempPasswordExpires: expiresAt,
-          })
-          .where(eq(users.id, user.id));
+            authType: "email",
+            tier: "free",
+            // User will be completed after OTP verification
+          });
+        }
 
         // Send email with temp password
         await sendTempPasswordEmail(email, tempPassword);
 
         return {
           success: true,
+          userExists,
           message: "Temporary password sent to your email",
         };
       } catch (error) {
@@ -153,6 +154,123 @@ export const authRouter = createTRPCRouter({
       };
     }),
 
+  // Verify email OTP and handle user creation
+  verifyEmailOTP: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        otp: z.string(),
+        isNewUser: z.boolean(),
+        nostrKeys: z
+          .object({
+            publicKey: z.string(),
+            privateKey: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { email, otp, isNewUser, nostrKeys } = input;
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email));
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      if (!user.tempPassword || !user.tempPasswordExpires) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "No valid temporary password found",
+        });
+      }
+
+      if (user.tempPassword !== otp) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid verification code",
+        });
+      }
+
+      if (new Date() > user.tempPasswordExpires) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Verification code expired",
+        });
+      }
+
+      // Handle new users
+      if (isNewUser) {
+        if (nostrKeys) {
+          // User provided their own Nostr keys (generated in frontend)
+          // ONLY store public key - NEVER store private key per requirements
+          await db
+            .update(users)
+            .set({
+              nostrPublicKey: nostrKeys.publicKey,
+              // nostrPrivateKey: null, // NEVER store private keys per requirements
+              lastCheckIn: new Date(),
+              tempPassword: null,
+              tempPasswordExpires: null,
+            })
+            .where(eq(users.id, user.id));
+        } else {
+          // This should not happen in the new flow - users always provide keys
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Nostr keys must be provided for new users",
+          });
+        }
+      } else {
+        // Existing user verification - they still need to connect Nostr
+        await db
+          .update(users)
+          .set({
+            tempPassword: null,
+            tempPasswordExpires: null,
+          })
+          .where(eq(users.id, user.id));
+
+        // Return without token - they need to connect Nostr next
+        return {
+          success: true,
+          requiresNostrConnection: true,
+          message: "Please connect your Nostr account to complete login",
+        };
+      }
+
+      // Fetch updated user
+      const [updatedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, user.id));
+
+      // Generate JWT token
+      const token = generateToken({
+        userId: updatedUser.id,
+        email: updatedUser.email!,
+        nostrPublicKey: updatedUser.nostrPublicKey!,
+        tier: updatedUser.tier as "free" | "premium" | "lifetime",
+      });
+
+      return {
+        token,
+        requiresNostrConnection: isNewUser && !nostrKeys,
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          nostrPublicKey: updatedUser.nostrPublicKey,
+          tier: updatedUser.tier,
+        },
+      };
+    }),
+
   // Nostr-based authentication
   loginWithNostr: publicProcedure
     .input(
@@ -160,6 +278,8 @@ export const authRouter = createTRPCRouter({
         publicKey: z.string(),
         signature: z.string(),
         message: z.string(),
+        email: z.string().email().optional(),
+        isNewUser: z.boolean().optional(),
         signedEvent: z
           .object({
             id: z.string(),
@@ -174,7 +294,8 @@ export const authRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input }) => {
-      const { publicKey, signature, message, signedEvent } = input;
+      const { publicKey, signature, message, email, isNewUser, signedEvent } =
+        input;
 
       let isValidSignature = false;
 
@@ -245,24 +366,24 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      // Check if user exists, create if not
+      // Check if user exists
       let [user] = await db
         .select()
         .from(users)
         .where(eq(users.nostrPublicKey, publicKey));
 
-      if (!user) {
-        [user] = await db
-          .insert(users)
-          .values({
-            authType: "nostr", // Nostr-authenticated users bring their own keys
-            nostrPublicKey: publicKey,
-            // nostrPrivateKey: null (explicitly not storing private keys for nostr users)
-            tier: "free",
-          })
-          .returning();
+      const userExists = !!user;
+
+      if (!userExists) {
+        // New user - require email verification
+        return {
+          userExists: false,
+          requiresEmailVerification: true,
+          message: "Email verification required for new users",
+        };
       }
 
+      // Existing user - proceed with login
       // Update last check-in
       await db
         .update(users)
@@ -280,12 +401,87 @@ export const authRouter = createTRPCRouter({
       });
 
       return {
+        userExists: true,
         token,
         user: {
           id: user.id,
           email: user.email,
           nostrPublicKey: user.nostrPublicKey,
           tier: user.tier,
+        },
+      };
+    }),
+
+  // Complete Nostr user registration with email verification
+  completeNostrRegistration: publicProcedure
+    .input(
+      z.object({
+        publicKey: z.string(),
+        email: z.string().email(),
+        otp: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { publicKey, email, otp } = input;
+
+      // Verify OTP
+      const [tempUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email));
+
+      if (!tempUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Email verification not found",
+        });
+      }
+
+      if (!tempUser.tempPassword || tempUser.tempPassword !== otp) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid verification code",
+        });
+      }
+
+      if (
+        !tempUser.tempPasswordExpires ||
+        new Date() > tempUser.tempPasswordExpires
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Verification code expired",
+        });
+      }
+
+      // Update the temporary user to complete Nostr registration
+      const [newUser] = await db
+        .update(users)
+        .set({
+          authType: "nostr",
+          nostrPublicKey: publicKey,
+          lastCheckIn: new Date(),
+          tempPassword: null,
+          tempPasswordExpires: null,
+        })
+        .where(eq(users.id, tempUser.id))
+        .returning();
+
+      // Generate JWT token
+      const token = generateToken({
+        userId: newUser.id,
+        email: newUser.email!,
+        nostrPublicKey: newUser.nostrPublicKey!,
+        tier: newUser.tier as "free" | "premium" | "lifetime",
+      });
+
+      return {
+        token,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          nostrPublicKey: newUser.nostrPublicKey,
+          tier: newUser.tier,
         },
       };
     }),
@@ -305,56 +501,8 @@ export const authRouter = createTRPCRouter({
     };
   }),
 
-  // Export Nostr keys (ONLY for email-authenticated users)
-  exportNostrKeys: protectedProcedure.mutation(async ({ ctx }) => {
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, ctx.user.userId));
-
-    if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "User not found",
-      });
-    }
-
-    // Only email-authenticated users can export keys (they have generated keys)
-    if (user.authType !== "email") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message:
-          "Key export is only available for email-authenticated users. Nostr users already have their keys.",
-      });
-    }
-
-    if (!user.nostrPrivateKey) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No private key found. It may have already been exported.",
-      });
-    }
-
-    // Decrypt private key
-    const privateKey = decryptData(user.nostrPrivateKey);
-
-    // Immediately wipe the keys from database after export
-    await db
-      .update(users)
-      .set({
-        nostrPrivateKey: null,
-      })
-      .where(eq(users.id, ctx.user.userId));
-
-    return {
-      privateKey,
-      publicKey: user.nostrPublicKey,
-      warning:
-        "🔑 Keys have been permanently removed from our servers. Store them safely!",
-      recommendation:
-        "Import these keys into a Nostr client like Damus, Amethyst, or Nostter.",
-    };
-  }),
+  // Export Nostr keys - REMOVED per security requirements
+  // Private keys are NEVER stored on server, so this endpoint is not needed
 
   // Get current user profile
   me: protectedProcedure.query(async ({ ctx }) => {
@@ -377,8 +525,8 @@ export const authRouter = createTRPCRouter({
       nostrPublicKey: user.nostrPublicKey,
       tier: user.tier,
       lastCheckIn: user.lastCheckIn,
-      hasNostrKeys: !!user.nostrPrivateKey, // Only true for email users who haven't exported
-      canExportKeys: user.authType === "email" && !!user.nostrPrivateKey,
+      hasNostrKeys: false, // Never store private keys per security requirements
+      canExportKeys: false, // Never store private keys per security requirements
       createdAt: user.createdAt,
     };
   }),

@@ -175,6 +175,9 @@ importers:
       '@scure/bip39':
         specifier: ^1.2.2
         version: 1.6.0
+      '@stripe/stripe-js':
+        specifier: ^7.9.0
+        version: 7.9.0
       '@tanstack/react-query':
         specifier: ^5.85.6
         version: 5.85.6(react@19.1.0)
@@ -200,7 +203,7 @@ importers:
         specifier: 15.5.2
         version: 15.5.2(@babel/core@7.28.3)(react-dom@19.1.0)(react@19.1.0)
       nostr-tools:
-        specifier: ^2.7.0
+        specifier: ^2.16.2
         version: 2.16.2(typescript@5.9.2)
       react:
         specifier: 19.1.0
@@ -3006,6 +3009,11 @@ packages:
       '@smithy/types': 4.3.2
       tslib: 2.8.1
     dev: true
+
+  /@stripe/stripe-js@7.9.0:
+    resolution: {integrity: sha512-ggs5k+/0FUJcIgNY08aZTqpBTtbExkJMYMLSMwyucrhtWexVOEY1KJmhBsxf+E/Q15f5rbwBpj+t0t2AW2oCsQ==}
+    engines: {node: '>=12.16'}
+    dev: false
 
   /@swc/helpers@0.5.15:
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
