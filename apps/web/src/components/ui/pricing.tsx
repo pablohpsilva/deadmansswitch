@@ -39,7 +39,7 @@ export function PricingCard({
   return (
     <div
       className={cn(
-        "relative bg-white rounded-xl border-2 p-8 transition-all duration-300",
+        "relative bg-gray-800 rounded-xl border-2 p-8 transition-all duration-300",
         popular ? "border-blue-500 shadow-lg" : "border-gray-200",
         "hover:shadow-lg"
       )}
@@ -61,21 +61,21 @@ export function PricingCard({
       )}
 
       <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+        <h3 className="text-2xl font-bold text-gray-100 mb-2">{name}</h3>
         <div className="mb-3">
-          <span className="text-4xl font-bold text-gray-900">
+          <span className="text-4xl font-bold text-gray-100">
             {formatPrice(price)}
           </span>
-          {period && <span className="text-gray-600 ml-2">{period}</span>}
+          {period && <span className="text-gray-300 ml-2">{period}</span>}
         </div>
-        <p className="text-gray-600">{description}</p>
+        <p className="text-gray-300">{description}</p>
       </div>
 
       <ul className="space-y-3 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">
             <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">{feature}</span>
+            <span className="text-gray-200">{feature}</span>
           </li>
         ))}
       </ul>
@@ -106,17 +106,17 @@ export function FeatureComparison({
   featureLabels,
 }: FeatureComparisonProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-gray-800 rounded-xl border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-700">
             <tr>
-              <th className="text-left py-6 px-8 text-lg font-bold text-gray-900">
+              <th className="text-left py-6 px-8 text-lg font-bold text-gray-100">
                 Features
               </th>
               {plans.map((plan) => (
                 <th key={plan.name} className="text-center py-6 px-8">
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-bold text-gray-100">
                     {plan.name}
                   </span>
                 </th>
@@ -125,8 +125,8 @@ export function FeatureComparison({
           </thead>
           <tbody className="divide-y divide-gray-100">
             {Object.entries(featureLabels).map(([key, label]) => (
-              <tr key={key} className="hover:bg-gray-50 transition-colors">
-                <td className="py-5 px-8 text-base font-semibold text-gray-900">
+              <tr key={key} className="hover:bg-gray-700 transition-colors">
+                <td className="py-5 px-8 text-base font-semibold text-gray-100">
                   {label}
                 </td>
                 {plans.map((plan) => (
@@ -153,7 +153,7 @@ function FeatureValue({ value }: { value: string | boolean }) {
   }
 
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-700 text-gray-200">
       {value}
     </span>
   );
@@ -176,8 +176,8 @@ export function FAQ({ items }: FAQProps) {
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
     <Card hover>
-      <h3 className="font-semibold text-gray-900 mb-3">{question}</h3>
-      <p className="text-gray-600 leading-relaxed">{answer}</p>
+      <h3 className="font-semibold text-gray-100 mb-3">{question}</h3>
+      <p className="text-gray-300 leading-relaxed">{answer}</p>
     </Card>
   );
 }

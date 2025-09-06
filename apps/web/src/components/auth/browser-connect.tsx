@@ -146,17 +146,17 @@ export function BrowserConnect({
         <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
           <Download className="h-6 w-6 text-orange-600" />
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2">
+        <h3 className="font-semibold text-gray-100 mb-2">
           Install a Nostr Extension
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-300 mb-4">
           No Nostr browser extension detected. Install one to continue.
         </p>
       </div>
 
       {browserInfo.canInstallExtensions ? (
         <div className="space-y-3">
-          <h4 className="font-medium text-gray-900">
+          <h4 className="font-medium text-gray-100">
             Recommended Extensions for {browserInfo.name}:
           </h4>
           <div className="space-y-3">
@@ -170,14 +170,14 @@ export function BrowserConnect({
               .map((extension) => (
                 <div
                   key={extension.name}
-                  className="border rounded-lg p-3 hover:bg-gray-50 transition-colors"
+                  className="border rounded-lg p-3 hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h5 className="font-medium text-gray-900">
+                      <h5 className="font-medium text-gray-100">
                         {extension.name}
                       </h5>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-300">
                         {extension.description}
                       </p>
                     </div>
@@ -236,8 +236,8 @@ export function BrowserConnect({
         <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
           <Chrome className="h-6 w-6 text-green-600" />
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2">Extension Detected</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="font-semibold text-gray-100 mb-2">Extension Detected</h3>
+        <p className="text-sm text-gray-300">
           {nostrBrowserService.getSupportedFeatures().extensionName} is
           available and ready to connect.
         </p>
@@ -298,7 +298,7 @@ export function BrowserConnect({
 
         {/* Extension Features */}
         <div className="border rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-3">Extension Features</h4>
+          <h4 className="font-medium text-gray-100 mb-3">Extension Features</h4>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span>Can sign events</span>
@@ -361,7 +361,7 @@ export function BrowserConnect({
 
         <button
           onClick={handleDisconnect}
-          className="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors"
+          className="w-full text-gray-300 hover:text-gray-200 py-2 text-sm transition-colors"
         >
           Disconnect Extension
         </button>
@@ -374,7 +374,7 @@ export function BrowserConnect({
       {step === "detect" && (
         <div className="text-center">
           <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Detecting browser extensions...</p>
+          <p className="text-gray-300">Detecting browser extensions...</p>
         </div>
       )}
 

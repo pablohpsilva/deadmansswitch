@@ -178,7 +178,7 @@ export function WalletConnect({
 
         <button
           onClick={handleDisconnect}
-          className="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors"
+          className="w-full text-gray-300 hover:text-gray-200 py-2 text-sm transition-colors"
         >
           Disconnect Wallet
         </button>
@@ -192,10 +192,10 @@ export function WalletConnect({
         <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
           <Wallet className="h-6 w-6 text-purple-600" />
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2">
+        <h3 className="font-semibold text-gray-100 mb-2">
           Connect Your Nostr Wallet
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-300">
           Connect using Nostr Wallet Connect (NWC) for secure authentication
         </p>
       </div>
@@ -221,7 +221,7 @@ export function WalletConnect({
           <div className="space-y-3">
             <label
               htmlFor="connection-uri"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-200"
             >
               Wallet Connection String
             </label>
@@ -232,12 +232,12 @@ export function WalletConnect({
                 value={connectionUri}
                 onChange={(e) => setConnectionUri(e.target.value)}
                 placeholder="nostr+walletconnect://..."
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                className="w-full px-4 py-3 pr-12 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowUri(!showUri)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
               >
                 {showUri ? (
                   <EyeOff className="h-4 w-4" />
@@ -263,12 +263,12 @@ export function WalletConnect({
       )}
 
       {/* Help section */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-          <AlertCircle className="h-4 w-4 mr-2 text-gray-600" />
+      <div className="bg-gray-700 rounded-lg p-4">
+        <h4 className="font-medium text-gray-100 mb-2 flex items-center">
+          <AlertCircle className="h-4 w-4 mr-2 text-gray-300" />
           How to get your connection string
         </h4>
-        <div className="text-sm text-gray-600 space-y-2">
+        <div className="text-sm text-gray-300 space-y-2">
           <p>Popular NWC-compatible wallets:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>

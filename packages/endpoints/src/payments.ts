@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "@/lib/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "@/lib/trpc";
 import {
   db,
   users,
@@ -107,6 +111,50 @@ async function getPricingConfig(tierName: string, paymentMethodName: string) {
 }
 
 export const paymentsRouter = createTRPCRouter({
+  // Get public pricing information for homepage (no auth required)
+  getPublicPricing: publicProcedure.query(async () => {
+    try {
+      const { tiers } = await getPricingFromDatabase();
+
+      // Build simplified public pricing structure
+      const result: any = {};
+
+      for (const tier of tiers) {
+        const features = generateTierFeatures(tier);
+
+        result[tier.name] = {
+          name: tier.displayName,
+          description: tier.description,
+          features: features,
+          maxEmails: tier.maxEmails,
+          maxRecipients: tier.maxRecipients,
+          maxSubjectLength: tier.maxSubjectLength,
+          maxContentLength: tier.maxContentLength,
+          maxRelays: tier.maxRelays,
+        };
+
+        if (tier.name === "free") {
+          result[tier.name].price = "$0";
+          result[tier.name].period = "forever";
+        } else if (tier.name === "premium") {
+          result[tier.name].price = "From $13.50";
+          result[tier.name].period = "per year";
+        } else if (tier.name === "lifetime") {
+          result[tier.name].price = "From $54";
+          result[tier.name].period = "one-time";
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error fetching public pricing:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch pricing information",
+      });
+    }
+  }),
+
   // Get pricing information
   getPricing: protectedProcedure.query(async () => {
     try {

@@ -121,7 +121,7 @@ export function PricingClient() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading pricing information...</p>
+            <p className="text-gray-300">Loading pricing information...</p>
           </div>
         </div>
       </>
@@ -350,21 +350,21 @@ export function PricingClient() {
         {/* Current Plan Section */}
         <Section background="gray">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-100 mb-8 text-center">
               Your Current Plan
             </h2>
-            <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg">
+            <div className="bg-gray-800 rounded-xl border border-gray-200 p-8 shadow-lg">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-2xl font-bold text-gray-900 capitalize">
+                    <h3 className="text-2xl font-bold text-gray-100 capitalize">
                       {currentTier} Plan
                     </h3>
                     <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
                       Current
                     </span>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-300">
                     {currentTier === "free" &&
                       "Perfect for getting started with basic features"}
                     {currentTier === "premium" && isSubscriptionActive && (
@@ -397,7 +397,7 @@ export function PricingClient() {
                       <span className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
                         Upgrade Available
                       </span>
-                      <p className="text-sm text-gray-600 mt-2">
+                      <p className="text-sm text-gray-300 mt-2">
                         Unlock more emails and advanced features
                       </p>
                     </div>
@@ -555,15 +555,15 @@ export function PricingClient() {
         {/* Bottom CTA */}
         <Section background="gray">
           <div className="text-center max-w-3xl mx-auto">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+            <h3 className="text-3xl font-bold text-gray-100 mb-4">
               Ready to Secure Your Digital Legacy?
             </h3>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
               Join thousands of users who trust our platform with their most
               important messages. Start free, upgrade when you need more power.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-              <div className="flex items-center justify-center space-x-2 text-gray-600">
+              <div className="flex items-center justify-center space-x-2 text-gray-300">
                 <svg
                   className="w-5 h-5 text-green-500"
                   fill="currentColor"
@@ -577,7 +577,7 @@ export function PricingClient() {
                 </svg>
                 <span>30-day money back guarantee*</span>
               </div>
-              <div className="flex items-center justify-center space-x-2 text-gray-600">
+              <div className="flex items-center justify-center space-x-2 text-gray-300">
                 <svg
                   className="w-5 h-5 text-green-500"
                   fill="currentColor"
@@ -591,7 +591,7 @@ export function PricingClient() {
                 </svg>
                 <span>Cancel anytime</span>
               </div>
-              <div className="flex items-center justify-center space-x-2 text-gray-600">
+              <div className="flex items-center justify-center space-x-2 text-gray-300">
                 <svg
                   className="w-5 h-5 text-green-500"
                   fill="currentColor"

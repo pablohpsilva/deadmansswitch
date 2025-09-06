@@ -75,7 +75,7 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
       <div className="flex items-center space-x-3">
         {/* Simple user info without avatar */}
         <div className="text-right">
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-100">
             {user.email || "Nostr User"}
           </p>
           <p className="text-xs text-gray-500">
@@ -108,9 +108,9 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
 
       {/* Export Keys Section */}
       {showExportKeys && user.canExportKeys && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border z-50 p-4">
-          <h4 className="font-medium text-gray-900 mb-2">Export Nostr Keys</h4>
-          <p className="text-xs text-gray-600 mb-3">
+        <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800 rounded-lg shadow-lg border z-50 p-4">
+          <h4 className="font-medium text-gray-100 mb-2">Export Nostr Keys</h4>
+          <p className="text-xs text-gray-300 mb-3">
             Export your Nostr keys to use with other clients. Keys will be
             permanently removed from our servers.
           </p>
@@ -139,15 +139,15 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
       {/* Export Keys Modal */}
       {exportedKeys && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-90vh overflow-y-auto">
+          <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-90vh overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-100">
                   Your Nostr Keys
                 </h3>
                 <button
                   onClick={() => setExportedKeys(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-300"
                 >
                   ×
                 </button>
@@ -162,7 +162,7 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Private Key (Keep this secret!)
                     </label>
                     <div className="flex">
@@ -170,11 +170,11 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
                         type="text"
                         value={exportedKeys.privateKey}
                         readOnly
-                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-lg text-sm font-mono"
+                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-l-lg text-sm font-mono"
                       />
                       <button
                         onClick={() => copyToClipboard(exportedKeys.privateKey)}
-                        className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-300"
+                        className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-600 rounded-r-lg hover:bg-gray-300"
                       >
                         Copy
                       </button>
@@ -182,7 +182,7 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Public Key
                     </label>
                     <div className="flex">
@@ -190,11 +190,11 @@ export function UserProfileSimple({ user }: UserProfileSimpleProps) {
                         type="text"
                         value={exportedKeys.publicKey}
                         readOnly
-                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-lg text-sm font-mono"
+                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-l-lg text-sm font-mono"
                       />
                       <button
                         onClick={() => copyToClipboard(exportedKeys.publicKey)}
-                        className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-300"
+                        className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-600 rounded-r-lg hover:bg-gray-300"
                       >
                         Copy
                       </button>

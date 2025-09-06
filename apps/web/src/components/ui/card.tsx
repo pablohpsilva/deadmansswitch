@@ -11,7 +11,7 @@ export function Card({ children, className, hover = false }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-white rounded-xl border border-gray-200 p-6",
+        "bg-gray-800 rounded-xl border border-gray-200 p-6",
         hover && "hover:shadow-lg transition-shadow duration-300",
         className
       )}
@@ -36,7 +36,7 @@ export function Section({
     <section
       className={cn(
         "py-20",
-        background === "white" ? "bg-white" : "bg-gray-50",
+        background === "white" ? "bg-gray-800" : "bg-gray-700",
         className
       )}
     >
@@ -58,11 +58,11 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <div className={cn("text-center mb-16", className)}>
-      <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+      <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 mb-4">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">{subtitle}</p>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">{subtitle}</p>
       )}
     </div>
   );
@@ -92,8 +92,8 @@ export function Button({
 
   const variantStyles = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-lg",
-    outline: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-    ghost: "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+    outline: "border border-gray-600 text-gray-200 hover:bg-gray-700",
+    ghost: "text-gray-300 hover:text-gray-100 hover:bg-gray-700",
   };
 
   const sizeStyles = {

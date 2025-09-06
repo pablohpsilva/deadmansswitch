@@ -129,17 +129,17 @@ export function ResponsivePricing({
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-100">
                     {pricing.free.name}
                   </h3>
-                  <div className="text-xl font-bold text-gray-900">
+                  <div className="text-xl font-bold text-gray-100">
                     ${pricing.free.price}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-300 mb-3">
                   Perfect for getting started
                 </p>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-gray-300">
                   {pricing.free.features.map((feature, idx) => (
                     <div key={idx}>• {feature}</div>
                   ))}
@@ -171,7 +171,7 @@ export function ResponsivePricing({
                 )}
 
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-100">
                     {pricing.premium.name}
                   </h3>
                   <div className="text-right">
@@ -192,15 +192,15 @@ export function ResponsivePricing({
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-3">For serious users</p>
+                <p className="text-sm text-gray-300 mb-3">For serious users</p>
 
-                <div className="text-xs text-gray-600 mb-3">
+                <div className="text-xs text-gray-300 mb-3">
                   {pricing.premium.features.map((feature, idx) => (
                     <div key={idx}>• {feature}</div>
                   ))}
                 </div>
 
-                <div className="flex items-center text-xs text-gray-600 mb-3">
+                <div className="flex items-center text-xs text-gray-300 mb-3">
                   <div className="flex items-center mr-4">
                     <div className="w-2 h-2 bg-orange-500 rounded-full mr-1"></div>
                     <span>10% off with Bitcoin</span>
@@ -244,7 +244,7 @@ export function ResponsivePricing({
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-100">
                     {pricing.lifetime.name}
                   </h3>
                   <div className="text-right">
@@ -265,17 +265,17 @@ export function ResponsivePricing({
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-300 mb-3">
                   Pay once, use forever
                 </p>
 
-                <div className="text-xs text-gray-600 mb-3">
+                <div className="text-xs text-gray-300 mb-3">
                   {pricing.lifetime.features.map((feature, idx) => (
                     <div key={idx}>• {feature}</div>
                   ))}
                 </div>
 
-                <div className="flex items-center text-xs text-gray-600 mb-3">
+                <div className="flex items-center text-xs text-gray-300 mb-3">
                   <div className="flex items-center mr-4">
                     <div className="w-2 h-2 bg-orange-500 rounded-full mr-1"></div>
                     <span>10% off with Bitcoin</span>
@@ -309,7 +309,7 @@ export function ResponsivePricing({
             {/* Close button for wizard */}
             <button
               onClick={handleBackToPlans}
-              className="absolute top-2 right-2 z-10 p-2 text-gray-500 hover:text-gray-700"
+              className="absolute top-2 right-2 z-10 p-2 text-gray-500 hover:text-gray-200"
             >
               <svg
                 className="h-5 w-5"

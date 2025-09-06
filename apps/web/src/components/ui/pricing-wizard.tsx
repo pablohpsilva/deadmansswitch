@@ -216,14 +216,14 @@ export function PricingWizard({
 
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">
+        <h2 className="text-xl font-bold text-gray-100 mb-1">
           {getStepTitle()}
         </h2>
-        <p className="text-sm text-gray-600">{getStepSubtitle()}</p>
+        <p className="text-sm text-gray-300">{getStepSubtitle()}</p>
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 min-h-[300px]">
+      <div className="bg-gray-800 rounded-xl border border-gray-200 p-6 min-h-[300px]">
         {/* Step 1: Tier Selection */}
         {currentStep === "tier" && (
           <div className="space-y-3">
@@ -329,7 +329,7 @@ export function PricingWizard({
         {currentStep === "details" && selectedMethod === "stablecoin" && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">
+              <h3 className="text-sm font-medium text-gray-100 mb-3">
                 Choose Token
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -342,7 +342,7 @@ export function PricingWizard({
                         "p-3 rounded-lg border-2 text-center font-medium transition-colors",
                         selectedToken === token
                           ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 hover:border-gray-300"
+                          : "border-gray-200 hover:border-gray-600"
                       )}
                     >
                       {token}
@@ -353,7 +353,7 @@ export function PricingWizard({
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">
+              <h3 className="text-sm font-medium text-gray-100 mb-3">
                 Choose Network
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -368,7 +368,7 @@ export function PricingWizard({
                         "p-3 rounded-lg border-2 text-center font-medium transition-colors",
                         selectedNetwork === network
                           ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 hover:border-gray-300"
+                          : "border-gray-200 hover:border-gray-600"
                       )}
                     >
                       {network}
@@ -383,17 +383,17 @@ export function PricingWizard({
         {/* Step 4: Confirmation */}
         {currentStep === "confirm" && selectedTier && selectedMethod && (
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-2">Order Summary</h3>
+            <div className="bg-gray-700 rounded-lg p-4">
+              <h3 className="font-medium text-gray-100 mb-2">Order Summary</h3>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Plan:</span>
+                  <span className="text-gray-300">Plan:</span>
                   <span className="font-medium capitalize">{selectedTier}</span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="text-gray-300">Payment Method:</span>
                   <span className="font-medium">
                     {selectedMethod === "stripe" && "Credit Card"}
                     {selectedMethod === "lightning" && "Bitcoin Lightning"}
@@ -403,9 +403,9 @@ export function PricingWizard({
                 </div>
 
                 <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-gray-600">Total:</span>
+                  <span className="text-gray-300">Total:</span>
                   <div className="text-right">
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-bold text-gray-100">
                       $
                       {
                         getCurrentPricingData().paymentMethods[selectedMethod]
@@ -517,7 +517,7 @@ function TierOption({
         "relative p-4 rounded-lg border-2 cursor-pointer transition-all",
         isSelected
           ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300"
+          : "border-gray-200 hover:border-gray-600"
       )}
     >
       {popular && (
@@ -531,17 +531,17 @@ function TierOption({
 
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h3 className="font-semibold text-gray-900">{title}</h3>
-          <p className="text-xs text-gray-600">{description}</p>
+          <h3 className="font-semibold text-gray-100">{title}</h3>
+          <p className="text-xs text-gray-300">{description}</p>
         </div>
         <div className="text-right">
-          <div className="text-lg font-bold text-gray-900">{price}</div>
-          <div className="text-xs text-gray-600">{period}</div>
+          <div className="text-lg font-bold text-gray-100">{price}</div>
+          <div className="text-xs text-gray-300">{period}</div>
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <ul className="text-xs text-gray-600">
+        <ul className="text-xs text-gray-300">
           {features.map((feature, idx) => (
             <li key={idx}>• {feature}</li>
           ))}
@@ -554,7 +554,7 @@ function TierOption({
           <div
             className={cn(
               "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-              isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+              isSelected ? "border-blue-500 bg-blue-500" : "border-gray-600"
             )}
           >
             {isSelected && <Check className="h-3 w-3 text-white" />}
@@ -599,7 +599,7 @@ function PaymentOption({
         "relative p-4 rounded-lg border-2 cursor-pointer transition-all",
         isSelected
           ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300"
+          : "border-gray-200 hover:border-gray-600"
       )}
     >
       {badge && (
@@ -619,20 +619,20 @@ function PaymentOption({
         <div
           className={cn(
             "p-2 rounded-lg",
-            isSelected ? "bg-blue-100" : "bg-gray-100"
+            isSelected ? "bg-blue-100" : "bg-gray-700"
           )}
         >
           <Icon
             className={cn(
               "h-5 w-5",
-              isSelected ? "text-blue-600" : "text-gray-600"
+              isSelected ? "text-blue-600" : "text-gray-300"
             )}
           />
         </div>
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">{title}</h3>
+            <h3 className="font-semibold text-gray-100">{title}</h3>
             <div className="text-right">
               <div className="flex items-center space-x-1">
                 {originalPrice !== price && (
@@ -640,12 +640,12 @@ function PaymentOption({
                     ${originalPrice}
                   </span>
                 )}
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-lg font-bold text-gray-100">
                   ${price}
                 </span>
               </div>
               {cryptoAmount && cryptoUnit && (
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-gray-300">
                   ≈ {cryptoAmount.toLocaleString()} {cryptoUnit}
                 </div>
               )}
@@ -656,7 +656,7 @@ function PaymentOption({
         <div
           className={cn(
             "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-            isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+            isSelected ? "border-blue-500 bg-blue-500" : "border-gray-600"
           )}
         >
           {isSelected && <Check className="h-3 w-3 text-white" />}
@@ -665,7 +665,7 @@ function PaymentOption({
 
       <div className="grid grid-cols-1 gap-2">
         <div>
-          <ul className="text-xs text-gray-600">
+          <ul className="text-xs text-gray-300">
             {features.map((feature, idx) => (
               <li key={idx} className="flex items-center">
                 <Check className="h-3 w-3 text-green-500 mr-1" />

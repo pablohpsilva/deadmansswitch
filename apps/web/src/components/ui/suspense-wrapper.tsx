@@ -87,7 +87,7 @@ export function DashboardSuspenseWrapper({
     <SuspenseWrapper
       fallback={
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gray-800 rounded-lg shadow p-6">
             <div className="animate-pulse space-y-4">
               <div className="h-6 bg-gray-200 rounded w-1/3" />
               <div className="h-4 bg-gray-200 rounded" />
@@ -110,7 +110,7 @@ export function EmailSuspenseWrapper({ children }: { children: ReactNode }) {
   return (
     <SuspenseWrapper
       fallback={
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-gray-800 rounded-lg shadow p-6">
           <div className="animate-pulse">
             <div className="h-6 bg-gray-200 rounded w-1/4 mb-4" />
             <div className="space-y-3">

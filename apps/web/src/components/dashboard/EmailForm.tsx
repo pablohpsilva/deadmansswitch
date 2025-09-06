@@ -272,7 +272,7 @@ export function EmailForm({
 
   if (mode === "edit" && isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-gray-800 rounded-lg shadow">
         <div className="p-6">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -288,15 +288,15 @@ export function EmailForm({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-gray-800 rounded-lg shadow">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-100">
             {mode === "create" ? "Create New Email" : "Edit Email"}
           </h2>
           <button
             onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-gray-200"
           >
             ← Back to List
           </button>
@@ -307,7 +307,7 @@ export function EmailForm({
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-200 mb-1"
             >
               Title *
             </label>
@@ -318,7 +318,7 @@ export function EmailForm({
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="My important message"
             />
             {errors.title && (
@@ -330,11 +330,11 @@ export function EmailForm({
           <div>
             <label
               htmlFor="subject"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-200 mb-1"
             >
               Subject *
               {tierLimits && (
-                <span className="text-gray-500 text-xs ml-2">
+                <span className="text-gray-400 text-xs ml-2">
                   ({formData.subject.length}/{tierLimits.maxSubjectLength})
                 </span>
               )}
@@ -346,7 +346,7 @@ export function EmailForm({
               onChange={(e) =>
                 setFormData({ ...formData, subject: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Important message from a friend"
             />
             {errors.subject && (
@@ -358,11 +358,11 @@ export function EmailForm({
           <div>
             <label
               htmlFor="content"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-200 mb-1"
             >
               Message Content *
               {tierLimits && (
-                <span className="text-gray-500 text-xs ml-2">
+                <span className="text-gray-400 text-xs ml-2">
                   ({formData.content.length}/{tierLimits.maxContentLength})
                 </span>
               )}
@@ -374,7 +374,7 @@ export function EmailForm({
               onChange={(e) =>
                 setFormData({ ...formData, content: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="This message will be sent if I don't check in..."
             />
             {errors.content && (
@@ -384,10 +384,10 @@ export function EmailForm({
 
           {/* Recipients */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Recipients *
               {tierLimits && (
-                <span className="text-gray-500 text-xs ml-2">
+                <span className="text-gray-400 text-xs ml-2">
                   (Max {tierLimits.maxRecipients})
                 </span>
               )}
@@ -401,7 +401,7 @@ export function EmailForm({
                     onChange={(e) =>
                       updateRecipient(index, "email", e.target.value)
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="recipient@example.com"
                   />
                   <input
@@ -410,7 +410,7 @@ export function EmailForm({
                     onChange={(e) =>
                       updateRecipient(index, "name", e.target.value)
                     }
-                    className="w-40 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-40 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Name (optional)"
                   />
                   {formData.recipients.length > 1 && (
@@ -449,7 +449,7 @@ export function EmailForm({
 
           {/* Schedule Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-gray-200 mb-3">
               Trigger Schedule *
             </label>
 
@@ -465,7 +465,7 @@ export function EmailForm({
                 />
                 <label
                   htmlFor="schedule-date"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-medium text-gray-200"
                 >
                   Send on specific date
                 </label>
@@ -492,7 +492,7 @@ export function EmailForm({
                         : undefined,
                     })
                   }
-                  className="ml-6 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="ml-6 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               )}
 
@@ -509,7 +509,7 @@ export function EmailForm({
                 />
                 <label
                   htmlFor="schedule-interval"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-medium text-gray-200"
                 >
                   Send if I don't check in within
                 </label>
@@ -529,9 +529,9 @@ export function EmailForm({
                           : undefined,
                       })
                     }
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-20 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <span className="text-sm text-gray-700">days</span>
+                  <span className="text-sm text-gray-200">days</span>
                 </div>
               )}
             </div>
@@ -555,7 +555,7 @@ export function EmailForm({
               />
               <label
                 htmlFor="is-active"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-gray-200"
               >
                 Email is active
               </label>
@@ -584,7 +584,7 @@ export function EmailForm({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-600 rounded-lg text-gray-200 hover:bg-gray-700"
               disabled={isSubmitting}
             >
               Cancel

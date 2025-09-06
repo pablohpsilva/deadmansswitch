@@ -105,7 +105,7 @@ export function EnhancedPricingCard({
   return (
     <div
       className={cn(
-        "relative bg-white rounded-xl border-2 transition-all duration-300",
+        "relative bg-gray-800 rounded-xl border-2 transition-all duration-300",
         popular ? "border-blue-500 shadow-lg" : "border-gray-200",
         "hover:shadow-lg",
         showPaymentMethods ? "p-6" : "p-8"
@@ -130,7 +130,7 @@ export function EnhancedPricingCard({
       {!showPaymentMethods ? (
         <>
           <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+            <h3 className="text-2xl font-bold text-gray-100 mb-2">{name}</h3>
             <div className="mb-3">
               {displayPrice.from < displayPrice.to ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -142,13 +142,13 @@ export function EnhancedPricingCard({
                   </span>
                 </div>
               ) : (
-                <span className="text-4xl font-bold text-gray-900">
+                <span className="text-4xl font-bold text-gray-100">
                   ${displayPrice.original}
                 </span>
               )}
-              <span className="text-gray-600 ml-2">/{interval}</span>
+              <span className="text-gray-300 ml-2">/{interval}</span>
             </div>
-            <p className="text-gray-600">{description}</p>
+            <p className="text-gray-300">{description}</p>
           </div>
 
           {displayPrice.from < displayPrice.to && (
@@ -174,7 +174,7 @@ export function EnhancedPricingCard({
             {features.map((feature, index) => (
               <li key={index} className="flex items-start">
                 <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">{feature}</span>
+                <span className="text-gray-200">{feature}</span>
               </li>
             ))}
           </ul>
@@ -192,10 +192,10 @@ export function EnhancedPricingCard({
       ) : (
         <>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900">{name} Plan</h3>
+            <h3 className="text-lg font-bold text-gray-100">{name} Plan</h3>
             <button
               onClick={() => setShowPaymentMethods(false)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-200"
             >
               <svg
                 className="h-5 w-5"
@@ -282,7 +282,7 @@ export function PricingCard({
   return (
     <div
       className={cn(
-        "relative bg-white rounded-xl border-2 p-8 transition-all duration-300",
+        "relative bg-gray-800 rounded-xl border-2 p-8 transition-all duration-300",
         popular ? "border-blue-500 shadow-lg" : "border-gray-200",
         "hover:shadow-lg"
       )}
@@ -304,21 +304,21 @@ export function PricingCard({
       )}
 
       <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+        <h3 className="text-2xl font-bold text-gray-100 mb-2">{name}</h3>
         <div className="mb-3">
-          <span className="text-4xl font-bold text-gray-900">
+          <span className="text-4xl font-bold text-gray-100">
             {formatPrice(price)}
           </span>
-          {period && <span className="text-gray-600 ml-2">{period}</span>}
+          {period && <span className="text-gray-300 ml-2">{period}</span>}
         </div>
-        <p className="text-gray-600">{description}</p>
+        <p className="text-gray-300">{description}</p>
       </div>
 
       <ul className="space-y-3 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">
             <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">{feature}</span>
+            <span className="text-gray-200">{feature}</span>
           </li>
         ))}
       </ul>

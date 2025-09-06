@@ -111,11 +111,11 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       {/* Connection Status */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Wallet Connection</h3>
+          <h3 className="font-semibold text-gray-100">Wallet Connection</h3>
           <button
             onClick={checkWalletStatus}
             disabled={loading}
-            className="p-1 text-gray-600 hover:text-gray-800 transition-colors"
+            className="p-1 text-gray-300 hover:text-gray-200 transition-colors"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -134,7 +134,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
                   Ready for Lightning payments
                 </p>
                 {walletInfo.balance !== undefined && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     Balance: {walletInfo.balance.toLocaleString()} sats
                   </p>
                 )}
@@ -170,7 +170,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
                   Ready for Nostr signing
                 </p>
                 {browserInfo.publicKey && (
-                  <p className="text-xs text-gray-600 font-mono mt-1">
+                  <p className="text-xs text-gray-300 font-mono mt-1">
                     {browserInfo.publicKey.slice(0, 16)}...
                   </p>
                 )}
@@ -191,14 +191,14 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
 
         {/* No Connections */}
         {!nwcConnected && !browserConnected && (
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <div className="p-4 bg-gray-700 border border-gray-200 rounded-lg">
             <div className="flex items-start space-x-3 mb-4">
               <AlertCircle className="h-5 w-5 text-gray-400 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-100">
                   No Wallets Connected
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-300">
                   Connect a wallet for Lightning payments
                 </p>
               </div>
@@ -236,16 +236,16 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
 
       {/* Payment Methods */}
       <div className="border-t pt-6">
-        <h4 className="font-medium text-gray-900 mb-3">
+        <h4 className="font-medium text-gray-100 mb-3">
           Available Payment Methods
         </h4>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
             <div className="flex items-center space-x-3">
               <Zap className="h-5 w-5 text-yellow-600" />
               <div>
-                <p className="font-medium text-gray-900">Lightning Network</p>
-                <p className="text-sm text-gray-600">Fast, low-fee payments</p>
+                <p className="font-medium text-gray-100">Lightning Network</p>
+                <p className="text-sm text-gray-300">Fast, low-fee payments</p>
               </div>
             </div>
             <span className="text-sm text-gray-500">
@@ -253,12 +253,12 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
             <div className="flex items-center space-x-3">
               <CreditCard className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="font-medium text-gray-900">Credit Card</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-gray-100">Credit Card</p>
+                <p className="text-sm text-gray-300">
                   Traditional payment via Stripe
                 </p>
               </div>
@@ -270,10 +270,10 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
 
       {/* Lightning Benefits */}
       <div className="border-t pt-6">
-        <h4 className="font-medium text-gray-900 mb-3">
+        <h4 className="font-medium text-gray-100 mb-3">
           Why Choose Lightning?
         </h4>
-        <ul className="text-sm text-gray-600 space-y-2">
+        <ul className="text-sm text-gray-300 space-y-2">
           <li className="flex items-center">
             <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-3"></div>
             Instant payments (seconds vs hours)
@@ -312,7 +312,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       <div className="mb-6">
         <button
           onClick={() => setView("status")}
-          className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+          className="text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Back to Wallet Manager
         </button>
@@ -334,7 +334,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       <div className="mb-6">
         <button
           onClick={() => setView("status")}
-          className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+          className="text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Back to Wallet Manager
         </button>
@@ -359,18 +359,18 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       <div className="mb-6">
         <button
           onClick={() => setView("status")}
-          className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+          className="text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Back to Wallet
         </button>
       </div>
 
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-900 mb-4">
+        <h3 className="font-semibold text-gray-100 mb-4">
           Choose Upgrade Plan
         </h3>
         <div className="space-y-3">
-          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
             <input
               type="radio"
               name="tier"
@@ -380,12 +380,12 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
               className="text-blue-600"
             />
             <div className="flex-1">
-              <p className="font-medium text-gray-900">Premium (1 Year)</p>
-              <p className="text-sm text-gray-600">$15 per year</p>
+              <p className="font-medium text-gray-100">Premium (1 Year)</p>
+              <p className="text-sm text-gray-300">$15 per year</p>
             </div>
           </label>
 
-          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
             <input
               type="radio"
               name="tier"
@@ -395,8 +395,8 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
               className="text-blue-600"
             />
             <div className="flex-1">
-              <p className="font-medium text-gray-900">Lifetime Access</p>
-              <p className="text-sm text-gray-600">$60 one-time</p>
+              <p className="font-medium text-gray-100">Lifetime Access</p>
+              <p className="text-sm text-gray-300">$60 one-time</p>
             </div>
           </label>
         </div>
@@ -420,10 +420,10 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
           <Wallet className="h-5 w-5 text-blue-600" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-100">
             Wallet Manager
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-300">
             Connect and manage your wallets
           </p>
         </div>

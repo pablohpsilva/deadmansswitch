@@ -111,11 +111,11 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       {/* Connection Status */}
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Wallet Connection</h3>
+          <h3 className="font-semibold text-gray-100">Wallet Connection</h3>
           <button
             onClick={checkWalletStatus}
             disabled={loading}
-            className="p-1 text-gray-600 hover:text-gray-800 transition-colors"
+            className="p-1 text-gray-300 hover:text-gray-200 transition-colors"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -134,7 +134,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
                   Ready for Lightning payments
                 </p>
                 {walletInfo.balance !== undefined && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     Balance: {walletInfo.balance.toLocaleString()} sats
                   </p>
                 )}
@@ -151,7 +151,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
               </button>
               <button
                 onClick={handleNwcDisconnect}
-                className="px-3 py-2 text-gray-600 hover:text-gray-800 border rounded-lg text-sm transition-colors"
+                className="px-3 py-2 text-gray-300 hover:text-gray-200 border rounded-lg text-sm transition-colors"
               >
                 Disconnect
               </button>
@@ -172,7 +172,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
                   Ready for Nostr signing
                 </p>
                 {browserInfo.publicKey && (
-                  <p className="text-xs text-gray-600 font-mono mt-1">
+                  <p className="text-xs text-gray-300 font-mono mt-1">
                     {browserInfo.publicKey.slice(0, 16)}...
                   </p>
                 )}
@@ -182,7 +182,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
             <div className="flex space-x-3">
               <button
                 onClick={handleBrowserDisconnect}
-                className="px-3 py-2 text-gray-600 hover:text-gray-800 border rounded-lg text-sm transition-colors"
+                className="px-3 py-2 text-gray-300 hover:text-gray-200 border rounded-lg text-sm transition-colors"
               >
                 Disconnect
               </button>
@@ -196,8 +196,8 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
             <div className="flex items-start space-x-3">
               <AlertCircle className="h-5 w-5 text-gray-400 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">No Connections</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-gray-100">No Connections</p>
+                <p className="text-sm text-gray-300">
                   Connect a Nostr wallet or browser extension
                 </p>
               </div>
@@ -231,14 +231,14 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
 
       {/* Payment Options */}
       <div className="border rounded-lg p-4">
-        <h3 className="font-semibold text-gray-900 mb-4">Payment Methods</h3>
+        <h3 className="font-semibold text-gray-100 mb-4">Payment Methods</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 border rounded-lg">
             <div className="flex items-center space-x-3">
               <Zap className="h-5 w-5 text-yellow-600" />
               <div>
-                <p className="font-medium text-gray-900">Lightning Network</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-gray-100">Lightning Network</p>
+                <p className="text-sm text-gray-300">
                   Fast, low-fee Bitcoin payments
                 </p>
               </div>
@@ -254,8 +254,8 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
             <div className="flex items-center space-x-3">
               <CreditCard className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="font-medium text-gray-900">Credit Card</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-gray-100">Credit Card</p>
+                <p className="text-sm text-gray-300">
                   Traditional payment via Stripe
                 </p>
               </div>
@@ -298,7 +298,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       <div className="mb-6">
         <button
           onClick={() => setView("status")}
-          className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+          className="text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Back to Wallet Manager
         </button>
@@ -320,7 +320,7 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       <div className="mb-6">
         <button
           onClick={() => setView("status")}
-          className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+          className="text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Back to Wallet Manager
         </button>
@@ -345,18 +345,18 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
       <div className="mb-6">
         <button
           onClick={() => setView("status")}
-          className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+          className="text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Back to Wallet
         </button>
       </div>
 
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-900 mb-4">
+        <h3 className="font-semibold text-gray-100 mb-4">
           Choose Upgrade Plan
         </h3>
         <div className="space-y-3">
-          <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+          <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
             <input
               type="radio"
               name="tier"
@@ -366,12 +366,12 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
               className="text-blue-600"
             />
             <div className="flex-1">
-              <p className="font-medium text-gray-900">Premium (1 Year)</p>
-              <p className="text-sm text-gray-600">$15 • ~30,000 sats</p>
+              <p className="font-medium text-gray-100">Premium (1 Year)</p>
+              <p className="text-sm text-gray-300">$15 • ~30,000 sats</p>
             </div>
           </label>
 
-          <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+          <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
             <input
               type="radio"
               name="tier"
@@ -381,8 +381,8 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
               className="text-blue-600"
             />
             <div className="flex-1">
-              <p className="font-medium text-gray-900">Lifetime Access</p>
-              <p className="text-sm text-gray-600">$60 • ~120,000 sats</p>
+              <p className="font-medium text-gray-100">Lifetime Access</p>
+              <p className="text-sm text-gray-300">$60 • ~120,000 sats</p>
             </div>
           </label>
         </div>
@@ -400,16 +400,16 @@ export function WalletManager({ className = "" }: WalletManagerProps) {
   );
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border p-6 ${className}`}>
+    <div className={`bg-gray-800 rounded-lg shadow-sm border p-6 ${className}`}>
       <div className="flex items-center space-x-3 mb-6">
         <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
           <Wallet className="h-5 w-5 text-purple-600" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-100">
             Wallet Manager
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-300">
             Connect and manage your Nostr wallets and extensions
           </p>
         </div>

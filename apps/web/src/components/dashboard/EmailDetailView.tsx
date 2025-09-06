@@ -138,7 +138,7 @@ export function EmailDetailView({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-gray-800 rounded-lg shadow">
         <div className="p-6">
           <div className="animate-pulse">
             <div className="flex items-center justify-between mb-6">
@@ -158,10 +158,10 @@ export function EmailDetailView({
 
   if (isDecrypting) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-gray-800 rounded-lg shadow">
         <div className="p-6 text-center">
           <div className="text-4xl mb-4">🔓</div>
-          <p className="text-gray-600">Decrypting email content...</p>
+          <p className="text-gray-300">Decrypting email content...</p>
           <div className="mt-4">
             <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
           </div>
@@ -172,10 +172,10 @@ export function EmailDetailView({
 
   if (decryptionError) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-gray-800 rounded-lg shadow">
         <div className="p-6 text-center">
           <div className="text-red-500 text-6xl mb-4">🔒❌</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-100 mb-2">
             Decryption Failed
           </h3>
           <p className="text-red-600 mb-4">{decryptionError}</p>
@@ -192,13 +192,13 @@ export function EmailDetailView({
 
   if (error || !email) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-gray-800 rounded-lg shadow">
         <div className="p-6 text-center">
           <div className="text-red-500 text-6xl mb-4">❌</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-100 mb-2">
             Email Not Found
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-300 mb-4">
             The email you're looking for doesn't exist or you don't have
             permission to view it.
           </p>
@@ -216,15 +216,15 @@ export function EmailDetailView({
   const status = getStatusInfo();
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-gray-800 rounded-lg shadow">
       {/* Header */}
       <div className="p-6 border-b">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-100">
               {email.title}
             </h2>
-            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-300">
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${status.color}-100 text-${status.color}-800`}
               >
@@ -239,7 +239,7 @@ export function EmailDetailView({
           <div className="flex space-x-3">
             <button
               onClick={onBack}
-              className="px-3 py-1.5 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-3 py-1.5 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700"
             >
               ← Back
             </button>
@@ -261,21 +261,21 @@ export function EmailDetailView({
           <div className="lg:col-span-2 space-y-6">
             {/* Email Preview */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-100 mb-4">
                 📧 Email Preview
               </h3>
               <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {/* Email Header */}
-                <div className="bg-gray-50 px-4 py-3 border-b">
+                <div className="bg-gray-700 px-4 py-3 border-b">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">Subject:</span>
-                    <span className="text-gray-600">
+                    <span className="text-gray-300">
                       Dead Man's Switch Email
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 px-4 py-2 border-b">
+                <div className="bg-gray-700 px-4 py-2 border-b">
                   <div className="text-sm">
                     <span className="font-medium">Subject: </span>
                     <span>{decryptedData?.subject || "No Subject"}</span>
@@ -283,7 +283,7 @@ export function EmailDetailView({
                 </div>
 
                 {/* Email Body */}
-                <div className="p-4 bg-white">
+                <div className="p-4 bg-gray-800">
                   <div className="prose prose-sm max-w-none">
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                       <h4 className="font-semibold text-yellow-800 mb-2">
@@ -296,11 +296,11 @@ export function EmailDetailView({
                       </p>
                     </div>
 
-                    <div className="bg-white border rounded-lg p-4">
+                    <div className="bg-gray-800 border rounded-lg p-4">
                       <h5 className="font-semibold mb-3">
                         {decryptedData?.subject || "No Subject"}
                       </h5>
-                      <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                      <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
                         {decryptedData?.content || "No content available"}
                       </div>
                     </div>
@@ -322,11 +322,11 @@ export function EmailDetailView({
           <div className="space-y-6">
             {/* Schedule Info */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">
+              <h3 className="text-lg font-medium text-gray-100 mb-3">
                 📅 Schedule
               </h3>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-700">{getScheduleDisplay()}</p>
+              <div className="bg-gray-700 rounded-lg p-4">
+                <p className="text-sm text-gray-200">{getScheduleDisplay()}</p>
 
                 {email.scheduledFor && (
                   <div className="mt-2 text-xs text-gray-500">
@@ -347,19 +347,19 @@ export function EmailDetailView({
 
             {/* Recipients */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">
+              <h3 className="text-lg font-medium text-gray-100 mb-3">
                 👥 Recipients
               </h3>
               <div className="space-y-2">
                 {(decryptedData?.recipients || []).map(
                   (recipient: any, index: number) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-3">
+                    <div key={index} className="bg-gray-700 rounded-lg p-3">
                       <div className="text-sm">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-100">
                           {recipient.email}
                         </p>
                         {recipient.name && (
-                          <p className="text-gray-600">{recipient.name}</p>
+                          <p className="text-gray-300">{recipient.name}</p>
                         )}
                       </div>
                     </div>
@@ -370,21 +370,21 @@ export function EmailDetailView({
 
             {/* Metadata */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">
+              <h3 className="text-lg font-medium text-gray-100 mb-3">
                 ℹ️ Details
               </h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
+              <div className="bg-gray-700 rounded-lg p-4 space-y-3 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">Created:</span>
-                  <p className="text-gray-600">{formatDate(email.createdAt)}</p>
+                  <span className="font-medium text-gray-200">Created:</span>
+                  <p className="text-gray-300">{formatDate(email.createdAt)}</p>
                 </div>
 
                 {email.updatedAt > email.createdAt && (
                   <div>
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium text-gray-200">
                       Last Updated:
                     </span>
-                    <p className="text-gray-600">
+                    <p className="text-gray-300">
                       {formatDate(email.updatedAt)}
                     </p>
                   </div>
@@ -392,13 +392,13 @@ export function EmailDetailView({
 
                 {email.sentAt && (
                   <div>
-                    <span className="font-medium text-gray-700">Sent:</span>
-                    <p className="text-gray-600">{formatDate(email.sentAt)}</p>
+                    <span className="font-medium text-gray-200">Sent:</span>
+                    <p className="text-gray-300">{formatDate(email.sentAt)}</p>
                   </div>
                 )}
 
                 <div>
-                  <span className="font-medium text-gray-700">Status:</span>
+                  <span className="font-medium text-gray-200">Status:</span>
                   <p className={`text-${status.color}-600`}>
                     {status.icon} {status.text}
                   </p>
@@ -406,10 +406,10 @@ export function EmailDetailView({
 
                 {email.nostrEventId && (
                   <div>
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium text-gray-200">
                       Nostr Event:
                     </span>
-                    <p className="text-gray-600 font-mono text-xs break-all">
+                    <p className="text-gray-300 font-mono text-xs break-all">
                       {email.nostrEventId}
                     </p>
                   </div>

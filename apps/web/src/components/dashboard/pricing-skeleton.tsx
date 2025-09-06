@@ -15,10 +15,10 @@ export function PricingSkeleton() {
           </div>
 
           {/* Current Plan Skeleton */}
-          <div className="bg-gray-50 py-20">
+          <div className="bg-gray-700 py-20">
             <div className="max-w-4xl mx-auto">
               <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse mx-auto mb-8" />
-              <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg">
+              <div className="bg-gray-800 rounded-xl border border-gray-200 p-8 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="space-y-3">
                     <div className="h-8 w-32 bg-gray-200 rounded-lg animate-pulse" />
@@ -36,7 +36,7 @@ export function PricingSkeleton() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg"
+                  className="bg-gray-800 rounded-xl border border-gray-200 p-8 shadow-lg"
                 >
                   <div className="text-center mb-6">
                     <div className="h-8 w-24 bg-gray-200 rounded-lg animate-pulse mx-auto mb-2" />
@@ -60,14 +60,14 @@ export function PricingSkeleton() {
           </div>
 
           {/* Feature Comparison Skeleton */}
-          <div className="bg-gray-50 py-20">
+          <div className="bg-gray-700 py-20">
             <div className="text-center mb-16">
               <div className="h-10 w-64 bg-gray-200 rounded-lg animate-pulse mx-auto mb-4" />
               <div className="h-5 w-96 bg-gray-200 rounded-lg animate-pulse mx-auto" />
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 p-6">
+            <div className="bg-gray-800 rounded-xl border border-gray-200 overflow-hidden">
+              <div className="bg-gray-700 p-6">
                 <div className="grid grid-cols-4 gap-4">
                   {[1, 2, 3, 4].map((i) => (
                     <div
@@ -101,7 +101,7 @@ export function PricingSkeleton() {
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg"
+                  className="bg-gray-800 rounded-xl border border-gray-200 p-6 shadow-lg"
                 >
                   <div className="h-6 w-3/4 bg-gray-200 rounded-lg animate-pulse mb-3" />
                   <div className="h-16 w-full bg-gray-200 rounded-lg animate-pulse" />

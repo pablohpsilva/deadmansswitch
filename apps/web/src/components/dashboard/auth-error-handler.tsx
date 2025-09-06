@@ -83,10 +83,10 @@ export function AuthErrorHandler({
               </svg>
             )}
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-gray-100 mb-2">
             {isRefreshing ? "Refreshing Authentication..." : "Authentication Issue"}
           </h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-300 mb-4">
             {isRefreshing 
               ? "We're updating your session. Please wait..." 
               : "Your session has expired or there was an authentication error."}

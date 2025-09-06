@@ -133,10 +133,10 @@ export function PaymentMethodSelector({
   return (
     <div className={cn("space-y-6", className)}>
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-100 mb-2">
           Choose Your Payment Method
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-300">
           Select how you'd like to pay for your {tier} plan
         </p>
       </div>
@@ -153,7 +153,7 @@ export function PaymentMethodSelector({
                 "relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200",
                 isSelected
                   ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  : "border-gray-200 hover:border-gray-600 hover:bg-gray-700"
               )}
               onClick={() => handleMethodSelect(option.id)}
             >
@@ -174,20 +174,20 @@ export function PaymentMethodSelector({
                 <div
                   className={cn(
                     "flex-shrink-0 p-2 rounded-lg",
-                    isSelected ? "bg-blue-100" : "bg-gray-100"
+                    isSelected ? "bg-blue-100" : "bg-gray-700"
                   )}
                 >
                   <Icon
                     className={cn(
                       "h-6 w-6",
-                      isSelected ? "text-blue-600" : "text-gray-600"
+                      isSelected ? "text-blue-600" : "text-gray-300"
                     )}
                   />
                 </div>
 
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-900">
+                    <h4 className="font-semibold text-gray-100">
                       {option.name}
                     </h4>
                     <div className="text-right">
@@ -198,7 +198,7 @@ export function PaymentMethodSelector({
                               ${option.originalPrice}
                             </span>
                           )}
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-lg font-bold text-gray-100">
                           ${option.price}
                         </span>
                       </div>
@@ -215,14 +215,14 @@ export function PaymentMethodSelector({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <h5 className="text-xs font-medium text-gray-700 mb-1">
+                      <h5 className="text-xs font-medium text-gray-200 mb-1">
                         Benefits
                       </h5>
                       <ul className="space-y-1">
                         {option.benefits.map((benefit, index) => (
                           <li
                             key={index}
-                            className="flex items-center space-x-1.5 text-xs text-gray-600"
+                            className="flex items-center space-x-1.5 text-xs text-gray-300"
                           >
                             <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
                             <span>{benefit}</span>
@@ -233,7 +233,7 @@ export function PaymentMethodSelector({
 
                     {option.requirements && (
                       <div>
-                        <h5 className="text-xs font-medium text-gray-700 mb-1">
+                        <h5 className="text-xs font-medium text-gray-200 mb-1">
                           Requirements
                         </h5>
                         <ul className="space-y-1">
@@ -253,10 +253,10 @@ export function PaymentMethodSelector({
 
                   {/* Stablecoin specific options */}
                   {option.id === "stablecoin" && isSelected && (
-                    <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+                    <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-200">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                          <label className="block text-xs font-medium text-gray-200 mb-2">
                             Token
                           </label>
                           <div className="space-y-2">
@@ -276,7 +276,7 @@ export function PaymentMethodSelector({
                                   }
                                   className="text-blue-600"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-gray-200">
                                   {token}
                                 </span>
                               </label>
@@ -285,7 +285,7 @@ export function PaymentMethodSelector({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                          <label className="block text-xs font-medium text-gray-200 mb-2">
                             Network
                           </label>
                           <div className="space-y-2">
@@ -305,7 +305,7 @@ export function PaymentMethodSelector({
                                   }
                                   className="text-blue-600"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-gray-200">
                                   {network}
                                 </span>
                               </label>
@@ -334,7 +334,7 @@ export function PaymentMethodSelector({
                     "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
                     isSelected
                       ? "border-blue-500 bg-blue-500"
-                      : "border-gray-300"
+                      : "border-gray-600"
                   )}
                 >
                   {isSelected && <Check className="h-3 w-3 text-white" />}
@@ -345,11 +345,11 @@ export function PaymentMethodSelector({
         })}
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">
+      <div className="bg-gray-700 rounded-lg p-4">
+        <h4 className="text-sm font-medium text-gray-100 mb-2">
           Payment Security
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-600">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-300">
           <div className="flex items-center space-x-2">
             <Shield className="h-4 w-4 text-green-500" />
             <span>End-to-end encryption</span>

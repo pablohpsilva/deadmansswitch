@@ -48,7 +48,7 @@ export function TierLimits({
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
+        <h3 className="text-lg font-semibold text-gray-100">Current Plan</h3>
         <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
           {userTier.charAt(0).toUpperCase() + userTier.slice(1)}
         </span>
@@ -58,7 +58,7 @@ export function TierLimits({
         {/* Email Usage */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">Emails</span>
+            <span className="text-sm font-medium text-gray-200">Emails</span>
             <span
               className={`text-sm font-medium ${getUsageColor(
                 currentEmails,
@@ -86,22 +86,22 @@ export function TierLimits({
 
         {/* Limits Summary */}
         <div className="pt-3 border-t">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
+          <h4 className="text-sm font-medium text-gray-200 mb-3">
             Plan Limits
           </h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Max Recipients per Email:</span>
+              <span className="text-gray-300">Max Recipients per Email:</span>
               <span className="font-medium">{tierLimits.maxRecipients}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Max Subject Length:</span>
+              <span className="text-gray-300">Max Subject Length:</span>
               <span className="font-medium">
                 {formatNumber(tierLimits.maxSubjectLength)} chars
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Max Content Length:</span>
+              <span className="text-gray-300">Max Content Length:</span>
               <span className="font-medium">
                 {formatNumber(tierLimits.maxContentLength)} chars
               </span>
@@ -113,10 +113,10 @@ export function TierLimits({
         {userTier === "free" && (
           <div className="pt-4 border-t">
             <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">
+              <h4 className="text-sm font-semibold text-gray-100 mb-2">
                 Upgrade for More Features
               </h4>
-              <ul className="text-xs text-gray-600 space-y-1 mb-3">
+              <ul className="text-xs text-gray-300 space-y-1 mb-3">
                 <li>• 100 emails instead of 2</li>
                 <li>• 10 recipients per email</li>
                 <li>• Up to 10 relay storage</li>
@@ -138,10 +138,10 @@ export function TierLimits({
         {/* Usage Tips */}
         {emailUsagePercentage > 50 && (
           <div className="pt-4 border-t">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
+            <h4 className="text-sm font-medium text-gray-200 mb-2">
               Usage Tips
             </h4>
-            <ul className="text-xs text-gray-600 space-y-1">
+            <ul className="text-xs text-gray-300 space-y-1">
               <li>• Delete old or test emails to free up space</li>
               <li>
                 • Use check-in schedules instead of fixed dates when possible

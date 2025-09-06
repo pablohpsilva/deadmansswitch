@@ -83,12 +83,12 @@ export function AuthDebugger() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-md z-50">
+    <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg shadow-lg p-4 max-w-md z-50">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">Auth Debug</h3>
+        <h3 className="font-semibold text-gray-100">Auth Debug</h3>
         <button
           onClick={() => setDebugInfo(null)}
-          className="text-gray-500 hover:text-gray-700"
+          className="text-gray-500 hover:text-gray-200"
         >
           ✕
         </button>
@@ -112,7 +112,7 @@ export function AuthDebugger() {
       </div>
 
       {debugInfo && (
-        <div className="mt-4 bg-gray-50 rounded p-3 text-xs">
+        <div className="mt-4 bg-gray-700 rounded p-3 text-xs">
           <pre className="whitespace-pre-wrap overflow-auto max-h-40">
             {JSON.stringify(debugInfo, null, 2)}
           </pre>

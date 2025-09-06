@@ -177,10 +177,10 @@ export function LightningPayment({
               <Zap className="h-8 w-8 text-yellow-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Connect Lightning Wallet
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Connect your NWC-compatible wallet to make Lightning payments
               </p>
             </div>
@@ -198,10 +198,10 @@ export function LightningPayment({
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Generating Invoice
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Creating Lightning invoice for your {tier} upgrade...
               </p>
             </div>
@@ -215,18 +215,18 @@ export function LightningPayment({
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Lightning Invoice Ready
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Pay {invoiceData?.amount.toLocaleString()} sats for {tier}{" "}
                 access
               </p>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 border">
+            <div className="bg-gray-700 rounded-lg p-4 border">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-200">
                   Lightning Invoice
                 </span>
                 <button
@@ -237,8 +237,8 @@ export function LightningPayment({
                   <span>{copied ? "Copied!" : "Copy"}</span>
                 </button>
               </div>
-              <div className="bg-white border rounded p-3">
-                <code className="text-xs text-gray-800 break-all font-mono">
+              <div className="bg-gray-800 border rounded p-3">
+                <code className="text-xs text-gray-200 break-all font-mono">
                   {invoice}
                 </code>
               </div>
@@ -254,7 +254,7 @@ export function LightningPayment({
               {onCancel && (
                 <button
                   onClick={onCancel}
-                  className="px-4 py-3 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="px-4 py-3 text-gray-300 hover:text-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
@@ -282,10 +282,10 @@ export function LightningPayment({
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 text-yellow-600 animate-spin mx-auto" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Processing Payment
               </h3>
-              <p className="text-gray-600">Sending Lightning payment...</p>
+              <p className="text-gray-300">Sending Lightning payment...</p>
             </div>
           </div>
         );
@@ -295,10 +295,10 @@ export function LightningPayment({
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Verifying Payment
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Confirming your payment and upgrading your account...
               </p>
             </div>
@@ -312,10 +312,10 @@ export function LightningPayment({
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Payment Successful!
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Your account has been upgraded to {tier}. You can now enjoy all
                 the premium features!
               </p>
@@ -338,7 +338,7 @@ export function LightningPayment({
               <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">
                 Payment Error
               </h3>
               <p className="text-red-600 text-sm mb-4">{error}</p>
@@ -356,7 +356,7 @@ export function LightningPayment({
               {onCancel && (
                 <button
                   onClick={onCancel}
-                  className="px-4 py-3 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="px-4 py-3 text-gray-300 hover:text-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
@@ -371,10 +371,10 @@ export function LightningPayment({
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
+    <div className="bg-gray-800 rounded-lg p-6 shadow-lg max-w-md mx-auto">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Lightning Payment</h2>
+          <h2 className="text-xl font-bold text-gray-100">Lightning Payment</h2>
           <div className="flex items-center space-x-1 text-yellow-600">
             <Zap className="h-5 w-5" />
             <span className="text-sm font-medium">Lightning</span>

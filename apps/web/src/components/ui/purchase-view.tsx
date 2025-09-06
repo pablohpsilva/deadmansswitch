@@ -132,7 +132,7 @@ export function PurchaseView({
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+          className="flex items-center text-gray-300 hover:text-gray-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           <span className="font-medium">Back to Plans</span>
@@ -143,7 +143,7 @@ export function PurchaseView({
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left Column - Selected Plan Details */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border-2 border-blue-500 p-6 sticky top-6">
+          <div className="bg-gray-800 rounded-xl border-2 border-blue-500 p-6 sticky top-6">
             <div className="text-center mb-4">
               <div className="flex items-center justify-center mb-2">
                 <Star className="h-5 w-5 text-blue-500 mr-2" />
@@ -151,7 +151,7 @@ export function PurchaseView({
                   Selected Plan
                 </span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">
+              <h2 className="text-2xl font-bold text-gray-100 mb-1">
                 {pricingData.name}
               </h2>
               <div className="flex items-center justify-center space-x-2 mb-2">
@@ -165,21 +165,21 @@ export function PurchaseView({
               <div className="text-sm text-green-600 font-medium">
                 Save up to {getHighestDiscount()}% with crypto
               </div>
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="text-sm text-gray-300 mt-1">
                 /{pricingData.interval}
               </div>
             </div>
 
             {/* Plan Features */}
             <div className="mb-4">
-              <h3 className="font-semibold text-gray-900 mb-3">
+              <h3 className="font-semibold text-gray-100 mb-3">
                 What's included:
               </h3>
               <ul className="space-y-2">
                 {pricingData.features.map((feature, index) => (
                   <li key={index} className="flex items-start text-sm">
                     <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
+                    <span className="text-gray-200">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -196,9 +196,9 @@ export function PurchaseView({
                   });
                 }
               }}
-              className="w-full flex items-center justify-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-center p-3 border border-gray-200 rounded-lg hover:bg-gray-700 transition-colors"
             >
-              <span className="text-sm font-medium text-gray-700 mr-2">
+              <span className="text-sm font-medium text-gray-200 mr-2">
                 Compare with other plans
               </span>
               <ChevronDown className="h-4 w-4 text-gray-500" />
@@ -208,12 +208,12 @@ export function PurchaseView({
 
         {/* Right Column - Payment Options */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-gray-800 rounded-xl border border-gray-200 p-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
+              <h2 className="text-xl font-bold text-gray-100 mb-2">
                 Choose Your Payment Method
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Select how you'd like to pay for your {pricingData.name} plan
               </p>
             </div>
@@ -283,10 +283,10 @@ export function PurchaseView({
 
             {/* Stablecoin Details */}
             {selectedMethod === "stablecoin" && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+              <div className="mb-6 p-4 bg-gray-700 rounded-lg border">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">
+                    <h4 className="font-medium text-gray-100 mb-3">
                       Choose Token
                     </h4>
                     <div className="grid grid-cols-2 gap-2">
@@ -301,7 +301,7 @@ export function PurchaseView({
                               "p-2 rounded-lg border-2 text-center font-medium transition-colors text-sm",
                               selectedToken === token
                                 ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 hover:border-gray-300"
+                                : "border-gray-200 hover:border-gray-600"
                             )}
                           >
                             {token}
@@ -312,7 +312,7 @@ export function PurchaseView({
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">
+                    <h4 className="font-medium text-gray-100 mb-3">
                       Choose Network
                     </h4>
                     <div className="grid grid-cols-2 gap-2">
@@ -327,7 +327,7 @@ export function PurchaseView({
                               "p-2 rounded-lg border-2 text-center font-medium transition-colors text-sm",
                               selectedNetwork === network
                                 ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 hover:border-gray-300"
+                                : "border-gray-200 hover:border-gray-600"
                             )}
                           >
                             {network}
@@ -343,24 +343,24 @@ export function PurchaseView({
             {/* Order Summary */}
             {selectedMethod && (
               <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                <h3 className="font-medium text-gray-900 mb-3">
+                <h3 className="font-medium text-gray-100 mb-3">
                   Order Summary
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Plan:</span>
+                    <span className="text-gray-300">Plan:</span>
                     <span className="font-medium">{pricingData.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Payment Method:</span>
+                    <span className="text-gray-300">Payment Method:</span>
                     <span className="font-medium">
                       {getMethodDisplayName(selectedMethod)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-blue-200">
-                    <span className="text-gray-600">Total:</span>
+                    <span className="text-gray-300">Total:</span>
                     <div className="text-right">
-                      <span className="text-lg font-bold text-gray-900">
+                      <span className="text-lg font-bold text-gray-100">
                         ${pricingData.paymentMethods[selectedMethod].price}
                       </span>
                       {pricingData.paymentMethods[selectedMethod].discount >
@@ -400,9 +400,9 @@ export function PurchaseView({
             </div>
 
             {/* Security Notice */}
-            <div className="mt-4 flex items-start space-x-2 p-3 bg-gray-50 rounded-lg">
-              <Shield className="h-4 w-4 text-gray-600 mt-0.5" />
-              <div className="text-sm text-gray-600">
+            <div className="mt-4 flex items-start space-x-2 p-3 bg-gray-700 rounded-lg">
+              <Shield className="h-4 w-4 text-gray-300 mt-0.5" />
+              <div className="text-sm text-gray-300">
                 <span className="font-medium">Secure Payment:</span> All
                 transactions are processed with bank-level security and
                 end-to-end encryption.
@@ -414,8 +414,8 @@ export function PurchaseView({
 
       {/* Plan Comparison Modal/Section */}
       {false && (
-        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <div className="mt-6 bg-gray-800 rounded-xl border border-gray-200 p-6">
+          <h3 className="text-lg font-bold text-gray-100 mb-4">
             Plan Comparison
           </h3>
           <div className="grid md:grid-cols-3 gap-4">
@@ -430,14 +430,14 @@ export function PurchaseView({
                     "p-4 rounded-lg border-2 transition-colors",
                     isSelected
                       ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      : "border-gray-200 hover:border-gray-600"
                   )}
                 >
                   <div className="text-center mb-3">
-                    <h4 className="font-semibold text-gray-900 capitalize">
+                    <h4 className="font-semibold text-gray-100 capitalize">
                       {plan.name}
                     </h4>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-lg font-bold text-gray-100">
                       {plan.paymentMethods
                         ? `From $${Math.min(
                             plan.paymentMethods.lightning.price,
@@ -451,7 +451,7 @@ export function PurchaseView({
                       </span>
                     )}
                   </div>
-                  <ul className="text-xs text-gray-600 space-y-1">
+                  <ul className="text-xs text-gray-300 space-y-1">
                     {/* Show key comparison metrics */}
                     <li className="flex items-center justify-between">
                       <span className="flex items-center">
@@ -536,7 +536,7 @@ function PaymentMethodCard({
         "relative p-4 rounded-lg border-2 cursor-pointer transition-all",
         isSelected
           ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+          : "border-gray-200 hover:border-gray-600 hover:bg-gray-700"
       )}
     >
       {badge && (
@@ -556,13 +556,13 @@ function PaymentMethodCard({
         <div
           className={cn(
             "p-2 rounded-lg flex-shrink-0",
-            isSelected ? "bg-blue-100" : "bg-gray-100"
+            isSelected ? "bg-blue-100" : "bg-gray-700"
           )}
         >
           <Icon
             className={cn(
               "h-5 w-5",
-              isSelected ? "text-blue-600" : "text-gray-600"
+              isSelected ? "text-blue-600" : "text-gray-300"
             )}
           />
         </div>
@@ -570,8 +570,8 @@ function PaymentMethodCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
             <div className="min-w-0">
-              <h3 className="font-semibold text-gray-900">{title}</h3>
-              <p className="text-sm text-gray-600">{subtitle}</p>
+              <h3 className="font-semibold text-gray-100">{title}</h3>
+              <p className="text-sm text-gray-300">{subtitle}</p>
             </div>
             <div className="text-right ml-4">
               <div className="flex items-center space-x-2">
@@ -580,12 +580,12 @@ function PaymentMethodCard({
                     ${originalPrice}
                   </span>
                 )}
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-lg font-bold text-gray-100">
                   ${price}
                 </span>
               </div>
               {cryptoAmount && cryptoUnit && (
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-gray-300">
                   ≈ {cryptoAmount.toLocaleString()} {cryptoUnit}
                 </div>
               )}
@@ -594,7 +594,7 @@ function PaymentMethodCard({
 
           <div className="grid md:grid-cols-2 gap-4 text-xs">
             <div>
-              <ul className="space-y-1 text-gray-600">
+              <ul className="space-y-1 text-gray-300">
                 {features.map((feature, idx) => (
                   <li key={idx} className="flex items-center">
                     <Check className="h-3 w-3 text-green-500 mr-1" />
@@ -621,7 +621,7 @@ function PaymentMethodCard({
         <div
           className={cn(
             "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-            isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+            isSelected ? "border-blue-500 bg-blue-500" : "border-gray-600"
           )}
         >
           {isSelected && <Check className="h-3 w-3 text-white" />}

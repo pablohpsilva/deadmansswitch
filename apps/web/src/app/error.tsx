@@ -26,17 +26,17 @@ export default function Error({ error, reset }: ErrorProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-gray-800 rounded-lg shadow-lg p-8">
           {/* Error Icon */}
           <div className="text-6xl mb-4">💥</div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl font-bold text-gray-100 mb-4">
             Something went wrong
           </h1>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-300 mb-6">
             We're sorry, but something unexpected happened. Our team has been
             notified.
           </p>
@@ -68,7 +68,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
             <button
               onClick={handleGoHome}
-              className="w-full border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full border border-gray-600 text-gray-200 px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors"
             >
               Go to Homepage
             </button>

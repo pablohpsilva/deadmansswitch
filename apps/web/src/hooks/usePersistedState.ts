@@ -129,7 +129,6 @@ export function usePersistedQuery<T>(
 // User preferences with local storage
 export function useUserPreferences() {
   interface UserPreferences {
-    theme: "light" | "dark" | "system";
     emailNotifications: boolean;
     autoSave: boolean;
     defaultCheckInDays: number;
@@ -138,7 +137,6 @@ export function useUserPreferences() {
   }
 
   const defaultPreferences: UserPreferences = {
-    theme: "system",
     emailNotifications: true,
     autoSave: true,
     defaultCheckInDays: 30,
