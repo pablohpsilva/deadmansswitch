@@ -31,11 +31,9 @@ services:
       - UPDATE_CHECK_INTERVAL=1d
       - PERMIT_DOCKER=connected-networks
 
-      # SSL/TLS configuration
-      - SSL_TYPE=letsencrypt
-      - ENABLE_SSL=1
-      - SSL_CERT_PATH=/etc/letsencrypt/live/${DOMAIN:-deadmansswitch.local}/fullchain.pem
-      - SSL_KEY_PATH=/etc/letsencrypt/live/${DOMAIN:-deadmansswitch.local}/privkey.pem
+      # SSL/TLS configuration (disabled for development)
+      - SSL_TYPE=
+      - ENABLE_SSL=0
 
       # SMTP Authentication
       - ENABLE_SASLAUTHD=0
